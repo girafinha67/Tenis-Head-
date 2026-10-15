@@ -18,16 +18,19 @@ test('mensagem: "O <modelo> da numeração <número> ainda está disponível em 
   );
 });
 
-test('a foto vai na mensagem como endereço completo, em linha própria', () => {
-  const msg = W.buildMessage({ name: 'Adidas Samba', size: '40', imageUrl: 'https://x.supabase.co/storage/v1/object/public/rshoes-images/samba.jpg' });
+test('a foto vai como cartão: endereço curto do produto em linha própria, não o arquivo da imagem', () => {
+  const link = W.shareUrl('https://loja.app', 'adidas-samba', 1);
+  assert.equal(link, 'https://loja.app/p/adidas-samba?i=1');
+  const msg = W.buildMessage({ name: 'Adidas Samba', size: '40', link });
   assert.equal(msg.split('\n')[0], 'O Adidas Samba da numeração 40 ainda está disponível em estoque?');
-  assert.equal(msg.split('\n').pop(), 'https://x.supabase.co/storage/v1/object/public/rshoes-images/samba.jpg');
+  assert.equal(msg.split('\n').pop(), link);
+  assert.ok(!/\.(jpe?g|png|webp)/i.test(msg));
 });
 
 test('link wa.me: número com DDI 55, texto codificado e acentos preservados', () => {
-  const url = W.buildUrl({ number: '(98) 99999-9999', name: 'Puma Speedcat', size: '39', imageUrl: 'https://loja.app/a.jpg' });
+  const url = W.buildUrl({ number: '(98) 99999-9999', name: 'Puma Speedcat', size: '39', link: 'https://loja.app/p/puma?i=0' });
   assert.match(url, /^https:\/\/wa\.me\/5598999999999\?text=/);
-  assert.equal(decode(url), 'O Puma Speedcat da numeração 39 ainda está disponível em estoque?\n\nhttps://loja.app/a.jpg');
+  assert.equal(decode(url), 'O Puma Speedcat da numeração 39 ainda está disponível em estoque?\n\nhttps://loja.app/p/puma?i=0');
 });
 
 test('número: aceita com/sem DDI e rejeita inválido', () => {
@@ -38,12 +41,11 @@ test('número: aceita com/sem DDI e rejeita inválido', () => {
   assert.equal(W.buildUrl({ number: '', name: 'X', size: '40' }), '');
 });
 
-test('foto relativa vira endereço completo; data: e lixo são descartados', () => {
-  assert.equal(W.absoluteUrl('assets/hero/a.jpg', 'https://loja.app/produto.html?slug=x'), 'https://loja.app/assets/hero/a.jpg');
-  assert.equal(W.absoluteUrl('https://cdn.x/a.jpg', 'https://loja.app/'), 'https://cdn.x/a.jpg');
-  assert.equal(W.absoluteUrl('data:image/png;base64,AAAA', 'https://loja.app/'), '');
-  assert.equal(W.absoluteUrl('javascript:alert(1)', 'https://loja.app/'), '');
-  assert.equal(W.absoluteUrl('', 'https://loja.app/'), '');
+test('shareUrl: exige slug e origem válidos; índice inválido vira 0', () => {
+  assert.equal(W.shareUrl('', 'x', 0), '');
+  assert.equal(W.shareUrl('https://loja.app', '', 0), '');
+  assert.equal(W.shareUrl('javascript:x', 'x', 0), '');
+  assert.equal(W.shareUrl('https://loja.app/', 'tênis x', -3), 'https://loja.app/p/t%C3%AAnis%20x?i=0');
 });
 
 test('nome com quebra de linha/controle não bagunça a mensagem', () => {
@@ -97,7 +99,7 @@ test('produto: sem escolher a numeração o link não abre e avisa o cliente', a
   assert.ok(p.toasts.some((t) => /numeração/i.test(t)));
 });
 
-test('produto: com a numeração escolhida o link leva modelo, número e a foto exibida', async () => {
+test('produto: com a numeração escolhida o link leva modelo, número e o cartão da foto exibida', async () => {
   const p = runProductPage({ product: PRODUCT });
   await p.settle();
   clickSize(p.byId, '40');
@@ -106,7 +108,7 @@ test('produto: com a numeração escolhida o link leva modelo, número e a foto 
   assert.equal(prevented, false);
   const href = p.byId('waBtn').attrs.href;
   assert.match(href, /^https:\/\/wa\.me\/5598999999999\?text=/);
-  assert.equal(decode(href), 'O Nike Air Force Verde da numeração 40 ainda está disponível em estoque?\n\nhttps://cdn.x/foto-1.jpg');
+  assert.equal(decode(href), 'O Nike Air Force Verde da numeração 40 ainda está disponível em estoque?\n\nhttps://loja.app/p/teste?i=0');
 });
 
 test('produto: a foto da mensagem acompanha a foto escolhida na galeria', async () => {
@@ -114,14 +116,14 @@ test('produto: a foto da mensagem acompanha a foto escolhida na galeria', async 
   await p.settle();
   clickSize(p.byId, '39');
   p.byId('galleryThumbs').handlers.click({ target: { closest: () => ({ dataset: { i: '1' } }) } });
-  assert.ok(decode(p.byId('waBtn').attrs.href).endsWith('https://cdn.x/foto-2.jpg'));
+  assert.ok(decode(p.byId('waBtn').attrs.href).endsWith('https://loja.app/p/teste?i=1'));
 });
 
-test('produto: foto local do site vira endereço completo do domínio', async () => {
-  const p = runProductPage({ product: { ...PRODUCT, images: ['assets/hero/nike.jpg'] } });
+test('produto sem foto: manda só a pergunta, sem link', async () => {
+  const p = runProductPage({ product: { ...PRODUCT, images: [] } });
   await p.settle();
   clickSize(p.byId, '38');
-  assert.ok(decode(p.byId('waBtn').attrs.href).endsWith('https://loja.app/assets/hero/nike.jpg'));
+  assert.equal(decode(p.byId('waBtn').attrs.href), 'O Nike Air Force Verde da numeração 38 ainda está disponível em estoque?');
 });
 
 test('produto: sem número de WhatsApp configurado no painel, não abre link quebrado', async () => {

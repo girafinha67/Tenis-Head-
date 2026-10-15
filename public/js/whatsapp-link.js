@@ -1,6 +1,6 @@
 /* Tênis Head — link "Chamar no WhatsApp".
    A venda é feita no WhatsApp: o botão do produto abre a conversa com a loja já com a pergunta pronta
-   e o endereço da foto do produto (o WhatsApp mostra a prévia da imagem na conversa).
+   e o cartão com a foto do produto (o WhatsApp mostra a imagem na conversa).
    Arquivo único: roda no navegador (window.TNWhatsApp) e nos testes (require). */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -20,25 +20,25 @@
     return d.length >= 12 && d.length <= 15 ? d : '';
   }
 
-  // A foto precisa ir como endereço completo (https://...), senão o WhatsApp não consegue abri-la.
-  function absoluteUrl(url, base) {
-    var u = clean(url);
-    if (!u || /^data:/i.test(u)) return '';
-    try {
-      var abs = new URL(u, base || (typeof location !== 'undefined' ? location.href : undefined)).href;
-      return /^https?:\/\//i.test(abs) ? abs : '';
-    } catch (e) { return ''; }
+  // Endereço curto do produto com a foto escolhida (?i=). O WhatsApp transforma esse endereço num cartão com a
+  // foto do produto (tags Open Graph servidas por netlify/functions/lib/share-page.js).
+  function shareUrl(origin, slug, index) {
+    var s = clean(slug);
+    var o = clean(origin).replace(/\/+$/, '');
+    if (!s || !/^https?:\/\//i.test(o)) return '';
+    var i = Number(index);
+    return o + '/p/' + encodeURIComponent(s) + '?i=' + (Number.isInteger(i) && i >= 0 ? i : 0);
   }
 
-  // "O <modelo> da numeração <número> ainda está disponível em estoque?" + endereço da foto.
+  // "O <modelo> da numeração <número> ainda está disponível em estoque?" + endereço do cartão com a foto.
   function buildMessage(opts) {
     var model = clean(opts && opts.name);
     var size = clean(opts && opts.size);
-    var image = clean(opts && opts.imageUrl);
+    var link = clean(opts && opts.link);
     var question = size
       ? 'O ' + model + ' da numeração ' + size + ' ainda está disponível em estoque?'
       : 'O ' + model + ' ainda está disponível em estoque?';
-    return image ? question + '\n\n' + image : question;
+    return link ? question + '\n\n' + link : question;
   }
 
   function buildUrl(opts) {
@@ -47,5 +47,5 @@
     return 'https://wa.me/' + number + '?text=' + encodeURIComponent(buildMessage(opts));
   }
 
-  return { clean: clean, normalizeNumber: normalizeNumber, absoluteUrl: absoluteUrl, buildMessage: buildMessage, buildUrl: buildUrl };
+  return { clean: clean, normalizeNumber: normalizeNumber, shareUrl: shareUrl, buildMessage: buildMessage, buildUrl: buildUrl };
 });

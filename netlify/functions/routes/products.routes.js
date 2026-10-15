@@ -2,6 +2,7 @@
 
 const express = require('express');
 const db = require('../lib/db');
+const { renderSharePage } = require('../lib/share-page');
 const { slugify, asyncHandler, parseIntId, escapeLike } = require('../lib/http-utils');
 const { log } = require('../lib/auth');
 const { deleteImage } = require('../lib/upload');
@@ -203,6 +204,26 @@ router.get(
     const row = await db.get('SELECT * FROM products WHERE slug = ? AND active = 1', [req.params.slug]);
     if (!row) return res.status(404).json({ error: 'Produto não encontrado.' });
     res.status(200).json({ product: rowToProduct(row) });
+  })
+);
+
+// GET /api/share/:slug?i=<foto> (público) — também servido em /p/:slug (ver netlify.toml).
+// Página com as tags Open Graph que o WhatsApp usa para mostrar a foto do produto na conversa.
+router.get(
+  '/share/:slug',
+  asyncHandler(async (req, res) => {
+    const row = await db.get('SELECT * FROM products WHERE slug = ? AND active = 1', [req.params.slug]);
+    if (!row) return res.status(404).type('text/plain').send('Produto não encontrado.');
+    const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim() === 'http' ? 'http' : 'https';
+    const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+    if (!/^[A-Za-z0-9.-]+(:\d+)?$/.test(host)) return res.status(400).type('text/plain').send('Host inválido.');
+    const settings = await require('../lib/site-settings').getSiteSettings();
+    const html = renderSharePage({
+      product: rowToProduct(row), origin: `${proto}://${host}`,
+      index: Number.parseInt(req.query.i, 10), storeName: settings.store.name,
+    });
+    res.set('Cache-Control', 'public, max-age=300');
+    res.status(200).type('html').send(html);
   })
 );
 

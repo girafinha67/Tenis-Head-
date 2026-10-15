@@ -272,10 +272,10 @@
     refreshWa();
     function refreshWa(){
       if(!waBtn) return;
-      var img = images[imageIndex] || images[0] || null;
+      var hasImg = !!(images[imageIndex] || images[0]);
       var url = window.TNWhatsApp.buildUrl({
         number: storeNumber, name: product.name, size: selected.size,
-        imageUrl: window.TNWhatsApp.absoluteUrl(img, location.href),
+        link: hasImg ? window.TNWhatsApp.shareUrl(location.origin, product.slug, imageIndex) : '',
       });
       waBtn.setAttribute('href', url || 'https://wa.me/');
     }

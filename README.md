@@ -100,22 +100,26 @@ Na página do produto o cliente escolhe a **numeração** e toca em **CHAMAR NO 
 ```text
 O <modelo do tênis> da numeração <numeração> ainda está disponível em estoque?
 
-<endereço da foto que está sendo exibida no site>
+https://SEU-SITE.netlify.app/p/<produto>?i=<foto>
 ```
 
 - A numeração é obrigatória (se o produto tem tamanhos cadastrados); sem ela o botão avisa o cliente e não abre o chat.
-- A foto é a que estava aparecendo na galeria no momento do clique. O link `wa.me` não permite anexar arquivo,
-  então a foto vai como endereço completo (https://...) e o WhatsApp mostra a prévia da imagem na conversa.
+- **A foto aparece na conversa como cartão** (imagem grande + nome e preço do produto). O link `wa.me` não permite anexar
+  arquivo, então o WhatsApp monta o cartão a partir do endereço `/p/<produto>`, uma página com as tags Open Graph
+  (`netlify/functions/lib/share-page.js`, rota `/p/:slug` no `netlify.toml`). Quem abre o endereço vai direto para o produto.
+- A foto do cartão é a que estava aparecendo na galeria no clique (`?i=` = posição da foto).
+- Para o cartão sair com a foto grande, deixe as fotos dos produtos com até ~300 KB; acima disso o WhatsApp pode mostrar
+  só uma miniatura ou nenhuma imagem. O upload do painel não comprime a imagem.
 - O número da loja vem do painel: **Configurações → WhatsApp (com DDD)**. Sem número preenchido o botão avisa em vez de abrir um link quebrado.
 - Cada clique é contado em Analytics ("Cliques WhatsApp").
-- Código: `public/js/whatsapp-link.js` (mensagem/link) e o final de `public/produto.html`.
+- Código: `public/js/whatsapp-link.js` (mensagem/link), o final de `public/produto.html` e `lib/share-page.js` (cartão com a foto).
 
 As tabelas antigas de pedidos/cupons continuam no banco (nada foi apagado), mas nenhuma rota do site usa mais essas tabelas.
 
 ### Testes
 
-`npm test` roda 20 testes (sem rede e sem banco): mensagem e link do WhatsApp, página do produto com DOM simulado
-e verificação de que não sobrou nada de pagamento no site.
+`npm test` roda 27 testes (sem rede e sem banco): mensagem e link do WhatsApp, página do produto com DOM simulado,
+página `/p/<produto>` com a foto (Open Graph) e verificação de que não sobrou nada de pagamento no site.
 
 ## Configurações da loja
 
