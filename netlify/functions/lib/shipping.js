@@ -15,7 +15,7 @@ const UFS = new Set(['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
 const clean = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 
 // Lê entrega + endereço do corpo da requisição. Retorna { option, address, acceptsMarketing }.
-// subtotalCents = valor dos produtos já com o cupom (base para o SEDEX grátis).
+// subtotalCents = valor dos produtos já com o cupom (não influencia mais o frete: motoboy é a combinar e retirada é grátis).
 function parseShipping(body, subtotalCents) {
   const b = body || {};
   const s = b.shipping || {};

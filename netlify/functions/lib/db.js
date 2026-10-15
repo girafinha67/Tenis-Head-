@@ -460,7 +460,7 @@ CREATE TABLE IF NOT EXISTS coupon_redemptions (
 CREATE UNIQUE INDEX IF NOT EXISTS uq_coupon_redemptions_order ON coupon_redemptions(order_id);
 CREATE INDEX IF NOT EXISTS idx_coupon_redemptions_coupon ON coupon_redemptions(coupon_id, status);
 
-ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_method TEXT;        -- motoboy_free | motoboy_paid | sedex | uber99 | pickup
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_method TEXT;        -- motoboy (a combinar via WhatsApp) | pickup (pedidos antigos: motoboy_free | motoboy_paid | sedex | uber99)
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_label TEXT;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_amount NUMERIC(12,2) NOT NULL DEFAULT 0;  -- já somado em amount
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS ship_cep TEXT;

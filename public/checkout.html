@@ -58,6 +58,13 @@ h3.sub{font-size:1.05rem;font-weight:500;margin:22px 0 10px;color:var(--mute)}
 .f input:focus+label,.f input:not(:placeholder-shown)+label,.f textarea:focus+label,.f textarea:not(:placeholder-shown)+label,.f.has label{top:8px;font-size:.78rem}
 .f .side{position:absolute;right:14px;top:0;bottom:0;display:flex;align-items:center;gap:8px;color:var(--mute)}
 .f .side input{width:auto}
+.f .side label.chk{position:static;top:auto;left:auto;pointer-events:auto;margin:0;color:var(--mute);font-size:.95rem;transition:none;cursor:pointer;white-space:nowrap}
+.f .side .chk input{position:absolute;opacity:0;width:0;height:0;padding:0;margin:0}
+#fNum input#numero{padding-right:150px}
+#fNum.off{opacity:.6}
+#fDoc input#doc{padding-right:44px}
+.f .side.okmark{color:var(--ok);font-weight:700;font-size:1.2rem}
+.f.valid{border-color:var(--ok)}
 .f.err{border-color:var(--err)}.f.err:focus-within{box-shadow:0 0 0 1px var(--err)}
 .f input[readonly]{color:#d2d2d2}
 .em{color:var(--err);font-size:.85rem;margin:-8px 2px 14px}
@@ -208,14 +215,14 @@ h3.sub{font-size:1.05rem;font-weight:500;margin:22px 0 10px;color:var(--mute)}
         </div>
       </div>
       <div class="em hidden" id="eRua"></div>
-      <div class="f" id="fNum"><input id="numero" inputmode="numeric" autocomplete="off" placeholder=" "><label for="numero">Número</label><span class="side"><label class="chk inl" style="position:static;margin:0"><input type="checkbox" id="semNumero"><span class="bx"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Sem número</label></span></div>
+      <div class="f" id="fNum"><input id="numero" inputmode="numeric" autocomplete="off" placeholder=" "><label for="numero">Número</label><span class="side"><label class="chk inl"><input type="checkbox" id="semNumero"><span class="bx"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Sem número</label></span></div>
       <div class="em hidden" id="eNum"></div>
       <div class="f"><input id="complemento" autocomplete="address-line2" maxlength="80" placeholder=" "><label for="complemento">Apto, Bloco, Referência, etc. (opcional)</label></div>
     </div>
 
     <div class="titrow" style="margin-top:38px"><h2 class="sec" style="margin:0">Dados para nota fiscal</h2><button type="button" class="help" id="nfHelp" aria-label="Ajuda">?</button></div>
     <div id="nfTip" class="tip hidden" style="margin-top:14px">Informe o CPF (pessoa física) ou o CNPJ (empresa) que deve constar na nota fiscal. Os mesmos dados são usados para confirmar o pagamento.</div>
-    <div class="f" style="margin-top:16px" id="fDoc"><input id="doc" inputmode="numeric" autocomplete="off" maxlength="18" placeholder=" " required><label for="doc">CPF ou CNPJ</label></div>
+    <div class="f" style="margin-top:16px" id="fDoc"><input id="doc" inputmode="numeric" autocomplete="off" maxlength="18" placeholder=" " required><label for="doc">CPF ou CNPJ</label><span class="side okmark hidden" id="docOk" aria-hidden="true">✓</span></div>
     <div class="em hidden" id="eDoc"></div>
     <label class="chk" style="margin-bottom:14px"><input type="checkbox" id="nfSame" checked><span class="bx"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Usar as mesmas informações da entrega</label>
     <div id="nfOther" class="hidden">
@@ -246,9 +253,11 @@ h3.sub{font-size:1.05rem;font-weight:500;margin:22px 0 10px;color:var(--mute)}
       <h2 class="sec">Forma de pagamento</h2>
       <div class="opts">
         <label class="opt"><input type="radio" name="pm" value="pix" checked><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>Pix</b></span><small>Aprovação na hora, sem acréscimo</small></span></label>
-        <label class="opt hidden" id="pmCardOpt"><input type="radio" name="pm" value="card"><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>Cartão</b></span><small id="pmCardHint">Crédito ou débito</small></span></label>
+        <label class="opt" id="pmCardOpt"><input type="radio" name="pm" value="card"><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>Cartão</b></span><small id="pmCardHint">Crédito ou débito</small></span></label>
       </div>
       <div id="cardPanel" class="hidden">
+        <div id="cardUnavail" class="notice hidden" style="margin-top:0" role="status">Pagamento com cartão indisponível no momento. Escolha Pix ou fale com a gente pelo WhatsApp.</div>
+        <div id="cardFields">
         <div class="ct" id="ctGrid">
           <label class="opt" id="ctCreditOpt"><input type="radio" name="ct" value="credit_card" checked><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>Crédito</b></span></span></label>
           <label class="opt" id="ctDebitOpt"><input type="radio" name="ct" value="debit_card"><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>Débito</b></span></span></label>
@@ -259,6 +268,7 @@ h3.sub{font-size:1.05rem;font-weight:500;margin:22px 0 10px;color:var(--mute)}
         <div class="f"><input id="cardName" autocomplete="cc-name" maxlength="60" placeholder=" "><label for="cardName">Nome impresso no cartão</label></div>
         <div class="f" id="installmentsWrap"><select id="installments"></select><label for="installments" style="top:8px;font-size:.78rem">Parcelas</label></div>
         <div class="secure">🔒 Os dados do cartão vão direto para o Mercado Pago. A loja não guarda número nem código de segurança.</div>
+        </div>
       </div>
     </fieldset>
     <button type="submit" class="btn" id="pay">GERAR PAGAMENTO PIX</button>
@@ -388,7 +398,7 @@ const fmtDay=d=>WEEK[d.getDay()]+' '+dd(d.getDate())+'/'+dd(d.getMonth()+1);
 function nextBiz(d){d=new Date(d);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);return d}
 function addBiz(d,n){d=new Date(d);while(n>0){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6)n--}return d}
 function etaText(o){
-  if(o.kind==='pickup')return '';
+  if(o.kind==='pickup'||o.toArrange)return '';
   const now=new Date();let start=nextBiz(now);
   if(o.sameDayCutoff&&now.getHours()>=o.sameDayCutoff&&start.toDateString()===now.toDateString())start=addBiz(now,1);
   if(o.kind==='correios'){const e=addBiz(now,o.maxDays);return 'Chega '+fmtDay(e)}
@@ -438,18 +448,23 @@ function renderShipping(){
   const box=$('shipBox'),main=$('shipMain'),rest=$('shipRest'),more=$('shipMore');
   if(!shipOptions.length){box.classList.add('hidden');return}
   box.classList.remove('hidden');
-  const optHtml=o=>'<label class="opt"><input type="radio" name="ship" value="'+o.id+'"'+(o.id===shipId?' checked':'')+'><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>'+esc(o.label)+'</b><span>'+(o.priceCents>0?money(o.priceCents/100):(o.id==='uber99'?'':'Grátis'))+'</span></span>'
+  const optHtml=o=>'<label class="opt"><input type="radio" name="ship" value="'+o.id+'"'+(o.id===shipId?' checked':'')+'><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>'+esc(o.label)+'</b><span>'+(o.toArrange?'A combinar':(o.priceCents>0?money(o.priceCents/100):'Grátis'))+'</span></span>'
     +(o.detail?'<div class="dt">'+esc(o.detail)+'</div>':'')+(etaText(o)?'<div class="eta">'+esc(etaText(o))+'</div>':'')+'</span></label>';
-  const nonPick=shipOptions.filter(o=>o.kind!=='pickup'),pick=shipOptions.filter(o=>o.kind==='pickup');
-  const first=nonPick[0]||pick[0];
-  let shown=[first];const sel=curShip();
-  if(sel&&sel!==first)shipExpanded=true;
-  const restOpts=shipOptions.filter(o=>o!==first);
-  main.innerHTML=optHtml(first);
-  rest.innerHTML=restOpts.filter(o=>o.kind!=='pickup').map(optHtml).join('')+(pick.length&&pick[0]!==first?'<div class="pickhd">Retirar em</div>'+pick.map(optHtml).join(''):'');
-  more.classList.toggle('hidden',!restOpts.length);
-  rest.classList.toggle('hidden',!(shipExpanded&&restOpts.length));
-  more.setAttribute('aria-expanded',shipExpanded?'true':'false');
+  if(shipOptions.length<=2){
+    main.innerHTML=shipOptions.map(optHtml).join('');rest.innerHTML='';
+    more.classList.add('hidden');rest.classList.add('hidden');
+  }else{
+    const nonPick=shipOptions.filter(o=>o.kind!=='pickup'),pick=shipOptions.filter(o=>o.kind==='pickup');
+    const first=nonPick[0]||pick[0];
+    const sel=curShip();
+    if(sel&&sel!==first)shipExpanded=true;
+    const restOpts=shipOptions.filter(o=>o!==first);
+    main.innerHTML=optHtml(first);
+    rest.innerHTML=restOpts.filter(o=>o.kind!=='pickup').map(optHtml).join('')+(pick.length&&pick[0]!==first?'<div class="pickhd">Retirar em</div>'+pick.map(optHtml).join(''):'');
+    more.classList.toggle('hidden',!restOpts.length);
+    rest.classList.toggle('hidden',!(shipExpanded&&restOpts.length));
+    more.setAttribute('aria-expanded',shipExpanded?'true':'false');
+  }
   box.querySelectorAll('input[name=ship]').forEach(r=>r.addEventListener('change',()=>{shipId=r.value;setErr(null,'eShip','');showAddr();onTotalsChanged()}));
 }
 $('shipMore').addEventListener('click',()=>{shipExpanded=!shipExpanded;renderShipping()});
@@ -485,14 +500,29 @@ $('cep').addEventListener('input',onCepChange);
 $('addrChange').addEventListener('click',()=>{ $('cep').focus();$('cep').select();window.scrollTo({top:$('fCep').getBoundingClientRect().top+scrollY-120,behavior:'smooth'}) });
 ['rua','bairro','cidade'].forEach(i=>$(i).addEventListener('input',()=>{if(addr){addr.street=$('rua').value;addr.neighborhood=$('bairro').value;addr.city=$('cidade').value;addr.__edit=true}}));
 $('uf').addEventListener('change',()=>{if(addr)addr.state=$('uf').value;$('uf').parentNode.classList.toggle('has',!!$('uf').value)});
-$('semNumero').addEventListener('change',()=>{const s=$('semNumero').checked;$('numero').disabled=s;if(s){$('numero').value='';setErr('fNum','eNum','')}$('numero').parentNode.style.opacity=s?.6:1});
+function applySemNumero(){
+  const s=$('semNumero').checked,n=$('numero');
+  n.disabled=s;if(s){n.value='';setErr('fNum','eNum','')}
+  $('fNum').classList.toggle('off',s);
+}
+$('semNumero').addEventListener('change',applySemNumero);
 
 /* ---------- contato ---------- */
 $('emailChange').addEventListener('click',()=>{$('email').readOnly=false;$('emailAlt').classList.add('hidden');$('email').focus()});
 $('nfHelp').addEventListener('click',()=>$('nfTip').classList.toggle('hidden'));
 $('nfSame').addEventListener('change',()=>$('nfOther').classList.toggle('hidden',$('nfSame').checked));
 $('telefone').addEventListener('input',()=>{$('telefone').value=maskPhone($('telefone').value)});
-$('doc').addEventListener('input',()=>{$('doc').value=maskDoc($('doc').value)});
+/* CPF/CNPJ: confere os dígitos verificadores (cálculo módulo 11) enquanto digita e ao sair do campo */
+function checkDocLive(final){
+  const d=digitsOf($('doc').value),ok=d.length===11?validCpf(d):d.length===14?validCnpj(d):false,box=$('fDoc');
+  $('docOk').classList.toggle('hidden',!ok);box.classList.toggle('valid',ok);
+  if(!d.length||ok){setErr('fDoc','eDoc','');return}
+  if(d.length===11||d.length===14)setErr('fDoc','eDoc',d.length===14?'CNPJ inválido.':'CPF inválido. Confira os números.');
+  else if(final)setErr('fDoc','eDoc',d.length>11?'CNPJ inválido.':'CPF incompleto. Digite os 11 números.');
+  else setErr('fDoc','eDoc','');
+}
+$('doc').addEventListener('input',()=>{$('doc').value=maskDoc($('doc').value);checkDocLive(false)});
+$('doc').addEventListener('blur',()=>checkDocLive(true));
 $('numero').addEventListener('input',()=>{$('numero').value=$('numero').value.replace(/[^0-9A-Za-z\- ]/g,'').slice(0,10)});
 
 /* ---------- totais ---------- */
@@ -539,12 +569,15 @@ function onTotalsChanged(){
   $('lnCouponRow').classList.toggle('hidden',!couponState);
   if(couponState){$('lnCode').textContent=couponState.code;$('lnDisc').textContent='− '+money(couponState.discount)}
   const o=curShip();
-  $('lnShip').textContent=!o?'—':(o.id==='uber99'?'A combinar':(o.priceCents>0?money(o.priceCents/100):'Grátis'));
+  $('lnShip').textContent=!o?'—':(o.toArrange?'A combinar':(o.priceCents>0?money(o.priceCents/100):'Grátis'));
   $('lnFeeRow').classList.toggle('hidden',!(q.feeCents>0));
   if(q.feeCents>0){$('lnFeeLabel').textContent=q.type==='debit_card'?'Taxa do débito':'Acréscimo do parcelamento ('+q.n+'x)';$('lnFee').textContent='+ '+money(q.feeCents/100)}
   $('lnTotal').textContent=money(q.totalCents/100);
   $('topTotal').textContent=money(q.totalCents/100);
-  if(!$('pay').dataset.busy)$('pay').textContent=method()==='card'?'PAGAR '+money(q.totalCents/100)+' NO CARTÃO':'GERAR PAGAMENTO PIX';
+  if(!$('pay').dataset.busy){
+    $('pay').textContent=method()==='card'?'PAGAR '+money(q.totalCents/100)+' NO CARTÃO':'GERAR PAGAMENTO PIX';
+    $('pay').disabled=method()==='card'&&!cardOk();
+  }
 }
 $('sumToggle').addEventListener('click',()=>{const open=$('details').classList.toggle('hidden');$('sumToggle').setAttribute('aria-expanded',open?'false':'true')});
 
@@ -591,7 +624,7 @@ function validateDelivery(silent){
     checks.push([($('cidade').value||addr.city||'').trim().length>=2&&!!(addr.state||$('uf').value),'fCidade','eRua','Informe cidade e estado.']);
     checks.push([$('semNumero').checked||$('numero').value.trim().length>0,'fNum','eNum','Informe o número ou marque "Sem número".']);
   }
-  checks.push([validDoc($('doc').value),'fDoc','eDoc',digitsOf($('doc').value).length>11?'CNPJ inválido.':'CPF ou CNPJ inválido.']);
+  checks.push([validDoc($('doc').value),'fDoc','eDoc',digitsOf($('doc').value).length>11?'CNPJ inválido.':(digitsOf($('doc').value).length===11?'CPF inválido. Confira os números.':'CPF incompleto. Digite os 11 números.')]);
   if(!$('nfSame').checked)checks.push([$('nfNome').value.trim().length>=3,'fNfNome','eNfNome','Informe o nome ou razão social da nota.']);
   let first=null,ok=true;
   checks.forEach(c=>{if(c[0]){if(!silent&&c[3]!==undefined)setErr(c[1],c[2],'');return}ok=false;if(!silent){setErr(c[1],c[2],c[3]);if(!first)first=c[1]}});
@@ -599,7 +632,7 @@ function validateDelivery(silent){
   return ok;
 }
 // limpa o erro ao digitar
-[['email','fEmail','eEmail'],['nome','fNome','eNome'],['sobrenome','fSobre','eSobre'],['telefone','fTel','eTel'],['doc','fDoc','eDoc'],['numero','fNum','eNum'],['rua','fRua','eRua'],['nfNome','fNfNome','eNfNome']]
+[['email','fEmail','eEmail'],['nome','fNome','eNome'],['sobrenome','fSobre','eSobre'],['telefone','fTel','eTel'],['numero','fNum','eNum'],['rua','fRua','eRua'],['nfNome','fNfNome','eNfNome']]
   .forEach(a=>$(a[0]).addEventListener('input',()=>setErr(a[1],a[2],'')));
 ['email','nome','sobrenome','telefone','numero','complemento','cep'].forEach(i=>$(i).addEventListener('change',persist));$('offers').addEventListener('change',persist);$('semNumero').addEventListener('change',persist);
 
@@ -660,8 +693,10 @@ function openThreeDS(ch){
 }
 window.addEventListener('message',e=>{const fr=$('tdsFrame');if(!fr||e.source!==fr.contentWindow)return;if(e.data&&e.data.status==='COMPLETE'){closeThreeDS();if(order)checkNow()}});
 function syncMethod(){
-  const card=method()==='card'&&cardOk();
-  $('cardPanel').classList.toggle('hidden',!card);$('cardName').required=card;
+  const wantCard=method()==='card',avail=cardOk(),card=wantCard&&avail;
+  $('cardPanel').classList.toggle('hidden',!wantCard);
+  $('cardUnavail').classList.toggle('hidden',!(wantCard&&!avail));
+  $('cardFields').classList.toggle('hidden',!card);$('cardName').required=card;
   if(card)ensureMp().catch(err=>setCardInfo(err.message,true));
   onTotalsChanged();
 }
@@ -670,8 +705,7 @@ document.querySelectorAll('input[name=ct]').forEach(r=>r.addEventListener('chang
 $('installments').addEventListener('change',onTotalsChanged);
 async function loadPayConfig(){
   try{const r=await fetch('/api/payments/config');const ct=r.headers.get('content-type')||'';if(!r.ok||ct.indexOf('json')<0)return;payCfg=await r.json()}catch(e){payCfg=null}
-  if(!cardOk())return;
-  $('pmCardOpt').classList.remove('hidden');
+  if(!cardOk()){syncMethod();return}
   const c=payCfg.card;
   $('ctCreditOpt').classList.toggle('hidden',!c.credit);$('ctDebitOpt').classList.toggle('hidden',!c.debit);
   if(!c.credit&&c.debit)document.querySelector('input[name=ct][value=debit_card]').checked=true;
@@ -780,7 +814,7 @@ function start(){
   if(s.nome)$('nome').value=s.nome;if(s.sobrenome)$('sobrenome').value=s.sobrenome;if(s.telefone)$('telefone').value=maskPhone(s.telefone);
   if(s.complemento)$('complemento').value=s.complemento;
   if(s.offers===false)$('offers').checked=false;
-  if(s.semNumero){$('semNumero').checked=true;$('numero').disabled=true}else if(s.numero)$('numero').value=s.numero;
+  if(s.semNumero){$('semNumero').checked=true;applySemNumero()}else if(s.numero)$('numero').value=s.numero;
   $('loading').classList.add('hidden');$('app').classList.remove('hidden');
   history.replaceState({step:2},'','');
   onTotalsChanged();

@@ -1,7 +1,8 @@
 /* Tênis Head — regras de entrega (frete).
    Arquivo ÚNICO usado pelo navegador (checkout) e pelo servidor (netlify/functions/lib/shipping.js),
-   então o valor mostrado ao cliente é sempre o mesmo que o servidor cobra.
-   >>> Para mudar preços, prazos ou a região de entrega local, edite SÓ a seção CONFIG abaixo. <<< */
+   então as opções mostradas ao cliente são sempre as mesmas que o servidor aceita.
+   Formas de entrega: retirada na loja e motoboy a combinar pelo WhatsApp (região local). Sem Sedex.
+   >>> Para mudar textos ou a região de entrega local, edite SÓ a seção CONFIG abaixo. <<< */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.ShippingRules = factory();
@@ -11,19 +12,12 @@
   // ============================== CONFIG ==============================
   var CONFIG = {
     // Entrega local por motoboy: CEPs de São Luís, São José de Ribamar, Paço do Lumiar e Raposa.
+    // Valor e horário são combinados com a loja pelo WhatsApp (nada é cobrado no checkout pela entrega).
     localCepFrom: 65000000,
     localCepTo: 65139999,
-    motoboyPaidCents: 1500,        // "Entrega via Motoboy" (mesmo dia se pedir até as 14h)
-    motoboyCutoffHour: 14,
-    sedexFreeFromCents: 0,         // SEDEX grátis a partir deste subtotal (0 = nunca)
-    // SEDEX por região (tabela fixa — não é cotação ao vivo dos Correios).
-    sedex: {
-      MA: { cents: 1452, days: 4 },
-      NE: { cents: 2490, days: 5 },   // demais estados do Nordeste
-      N:  { cents: 3290, days: 7 },
-      CO: { cents: 3290, days: 7 },
-      SE: { cents: 3490, days: 6 },
-      S:  { cents: 3990, days: 7 }
+    motoboy: {
+      label: 'ENTREGA EM SÃO LUÍS/Adjacentes - VIA MOTOBOY (A COMBINAR VIA WHATSAPP)',
+      detail: 'Valor e horário da entrega são combinados com a loja pelo WhatsApp depois do pedido.'
     },
     pickup: {
       label: 'RETIRAR NA LOJA TÊNIS HEAD',
@@ -39,13 +33,6 @@
     [69999, 'AC'], [72799, 'DF'], [73699, 'DF'], [76799, 'GO'], [76999, 'RO'], [77995, 'TO'],
     [78899, 'MT'], [78999, 'RO'], [79999, 'MS'], [87999, 'PR'], [89999, 'SC'], [99999, 'RS']
   ];
-  var REGION = {
-    MA: 'MA', PI: 'NE', CE: 'NE', RN: 'NE', PB: 'NE', PE: 'NE', AL: 'NE', SE: 'NE', BA: 'NE',
-    AC: 'N', AP: 'N', AM: 'N', PA: 'N', RO: 'N', RR: 'N', TO: 'N',
-    DF: 'CO', GO: 'CO', MT: 'CO', MS: 'CO',
-    SP: 'SE', RJ: 'SE', MG: 'SE', ES: 'SE', PR: 'S', SC: 'S', RS: 'S'
-  };
-
   function digits(v) { return String(v == null ? '' : v).replace(/\D/g, ''); }
   function validCep(cep) { var d = digits(cep); return d.length === 8 && !/^0{8}$/.test(d); }
 
@@ -64,32 +51,17 @@
     return n >= CONFIG.localCepFrom && n <= CONFIG.localCepTo;
   }
 
-  // Opções disponíveis para o CEP. subtotalCents = valor dos produtos já com cupom.
-  // Cada opção: { id, kind, label, detail, priceCents, minDays, maxDays, requiresAddress }
+  // Opções disponíveis para o CEP. subtotalCents é mantido por compatibilidade (não influencia mais o frete).
+  // Cada opção: { id, kind, label, detail, priceCents, minDays, maxDays, requiresAddress, toArrange }
+  // toArrange = true → valor/horário combinados pelo WhatsApp (priceCents fica 0 no checkout).
   function options(cep, subtotalCents) {
     var out = [];
-    var uf = ufFromCep(cep);
-    var local = isLocal(cep);
-    if (local) {
-      out.push({ id: 'motoboy_free', kind: 'motoboy', label: 'ENTREGA GRÁTIS EM SÃO LUÍS/Adjacentes - VIA MOTOBOY',
-        detail: '', priceCents: 0, minDays: 0, maxDays: 1, requiresAddress: true });
-    }
-    if (uf) {
-      var cfg = CONFIG.sedex[REGION[uf]] || CONFIG.sedex.SE;
-      var free = CONFIG.sedexFreeFromCents > 0 && subtotalCents >= CONFIG.sedexFreeFromCents;
-      out.push({ id: 'sedex', kind: 'correios', label: 'Correios SEDEX', detail: '',
-        priceCents: free ? 0 : cfg.cents, minDays: cfg.days, maxDays: cfg.days, requiresAddress: true });
-    }
-    if (local) {
-      out.push({ id: 'motoboy_paid', kind: 'motoboy', label: 'Entrega via Motoboy',
-        detail: 'Pedidos realizados até às ' + CONFIG.motoboyCutoffHour + 'h são entregues no mesmo dia. O horário de entrega pode variar de acordo com a rota. Aguarde nosso contato pelo WhatsApp para mais informações.',
-        priceCents: CONFIG.motoboyPaidCents, minDays: 0, maxDays: 1, requiresAddress: true, sameDayCutoff: CONFIG.motoboyCutoffHour });
-      out.push({ id: 'uber99', kind: 'app', label: 'UBER / 99',
-        detail: 'A corrida é paga por você direto ao motorista. Combinamos pelo WhatsApp.',
-        priceCents: 0, minDays: 0, maxDays: 1, requiresAddress: true });
+    if (isLocal(cep)) {
+      out.push({ id: 'motoboy', kind: 'motoboy', label: CONFIG.motoboy.label, detail: CONFIG.motoboy.detail,
+        priceCents: 0, minDays: 0, maxDays: 1, requiresAddress: true, toArrange: true });
     }
     out.push({ id: 'pickup', kind: 'pickup', label: CONFIG.pickup.label, detail: CONFIG.pickup.detail,
-      priceCents: 0, minDays: 0, maxDays: 0, requiresAddress: false });
+      priceCents: 0, minDays: 0, maxDays: 0, requiresAddress: false, toArrange: false });
     return out;
   }
 
