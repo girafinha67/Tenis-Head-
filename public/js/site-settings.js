@@ -1,7 +1,7 @@
 /* Configurações gerais da loja (editadas no painel, aba "Configurações").
    Buscadas a cada visita (sem cache) e aplicadas no site: rodapé, contato, SEO da home,
-   aviso global e regras exibidas no checkout. Se a busca falhar, o site segue com o texto padrão.
-   Expõe window.TNSiteReady (Promise) para o checkout. */
+   aviso global e o número de WhatsApp usado no botão "Chamar no WhatsApp". Se a busca falhar, o site segue com o texto padrão.
+   Expõe window.TNSiteReady (Promise) com as configurações, usada pela página do produto. */
 (function () {
   'use strict';
   var ready = fetch('/api/settings/site', { cache: 'no-store' })

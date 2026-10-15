@@ -13,7 +13,7 @@ const SETTINGS_KEY = 'home_content';
 const DEFAULT_HOME_CONTENT = {
   topbar: [
     'HÁ ANOS NO MERCADO DE TÊNIS E MODA',
-    'PAGOU NO PIX, SEU PEDIDO SAI PRIMEIRO',
+    'CHAME NO WHATSAPP E FECHE SEU PEDIDO',
   ],
   hero: [
     { image: '/assets/hero/nike-air-force-black.jpg', link: '/catalogo.html?brand=Nike' },
@@ -27,7 +27,7 @@ const DEFAULT_HOME_CONTENT = {
   benefits: [
     { icon: '🏆', title: 'Há anos no mercado', text: 'De tênis e moda.' },
     { icon: '↩️', title: 'Troca fácil', text: 'Até 7 dias depois que você receber.' },
-    { icon: '🔒', title: 'Pagamento seguro', text: 'Pix seguro, confirmação automática.' },
+    { icon: '🔒', title: 'Compra combinada', text: 'Você fecha tudo direto com a loja no WhatsApp.' },
     { icon: '🎧', title: 'Atendimento', text: 'Fale com a gente direto no WhatsApp.' },
   ],
   promoBanner: {
@@ -76,7 +76,7 @@ router.put(
   })
 );
 
-// GET /api/settings/site — público: nome, contato, SEO, aviso e regras do checkout (sempre fresco).
+// GET /api/settings/site — público: nome, contato (WhatsApp), SEO e aviso (sempre fresco).
 router.get(
   '/settings/site',
   asyncHandler(async (req, res) => {

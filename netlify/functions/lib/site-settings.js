@@ -1,14 +1,11 @@
 'use strict';
 
 // Configurações gerais da loja editáveis no painel (aba "Configurações").
-// Guardadas em app_settings (chave site_settings). Toda entrada é sanitizada aqui;
-// o que o checkout aplica (vendas abertas, pedido mínimo, quantidade máxima, pontos,
-// cupons) é lido do banco NO SERVIDOR a cada pedido — o navegador nunca decide isso.
+// Guardadas em app_settings (chave site_settings). Toda entrada é sanitizada aqui.
+// O site não vende nem cobra: o contato.whatsapp daqui é o número do botão "Chamar no WhatsApp".
 
 // db é carregado sob demanda (as funções puras abaixo não dependem do banco e são testadas sem ele).
 const getDb = () => require('./db');
-
-const CARD = require('./card-fees');
 
 const SETTINGS_KEY = 'site_settings';
 
@@ -17,16 +14,6 @@ const DEFAULTS = {
   contact: { whatsapp: '', instagram: 'tenishead', email: '', hours: '' },
   seo: { homeTitle: "Tênis Head | Tênis e Streetwear em São Luís", homeDescription: '' },
   announcement: { active: false, text: '', link: '', bgColor: '#e10600', textColor: '#ffffff' },
-  checkout: {
-    salesOpen: true,
-    closedMessage: 'Estamos com as vendas pausadas no momento. Volte em breve!',
-    minOrder: 0,
-    maxQuantity: 20,
-    notice: '',
-    couponsEnabled: true,
-  },
-  loyalty: { pointsPerReal: null },
-  card: { ...CARD.DEFAULT_CARD, rates: [...CARD.DEFAULT_RATES] },
 };
 
 function str(v, max, fallback) {
@@ -36,13 +23,6 @@ function str(v, max, fallback) {
 function bool(v, fallback) {
   if (v === undefined || v === null) return fallback;
   return v === true || v === 'true' || v === 1 || v === '1';
-}
-function num(v, min, max, fallback, { integer = false } = {}) {
-  if (v === undefined || v === null || v === '') return fallback;
-  const n = Number(v);
-  if (!Number.isFinite(n)) return fallback;
-  const clamped = Math.min(max, Math.max(min, n));
-  return integer ? Math.round(clamped) : Math.round(clamped * 100) / 100;
 }
 function color(v, fallback) {
   return typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.trim()) ? v.trim() : fallback;
@@ -70,29 +50,10 @@ function email(v, fallback) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) && s.length <= 120 ? s : fallback;
 }
 
-// Cartão: tabela de acréscimo por nº de parcelas (percentual total, 0 a 50%).
-function sanitizeCard(input, base) {
-  const i = input && typeof input === 'object' ? input : {};
-  const rates = [];
-  for (let n = 0; n < CARD.MAX_INSTALLMENTS; n += 1) {
-    const incoming = Array.isArray(i.rates) ? i.rates[n] : undefined;
-    rates.push(num(incoming, 0, 50, (base.rates && base.rates[n] != null) ? base.rates[n] : CARD.DEFAULT_RATES[n]));
-  }
-  return {
-    enabled: bool(i.enabled, base.enabled),
-    credit: bool(i.credit, base.credit),
-    debit: bool(i.debit, base.debit),
-    maxInstallments: num(i.maxInstallments, 1, CARD.MAX_INSTALLMENTS, base.maxInstallments, { integer: true }),
-    minInstallment: num(i.minInstallment, 0, 10000, base.minInstallment),
-    rates,
-    debitFee: num(i.debitFee, 0, 50, base.debitFee),
-  };
-}
-
 // Aceita parcial; completa com o que já existe (base) ou com os padrões.
 function sanitize(input, base = DEFAULTS) {
   const i = input && typeof input === 'object' ? input : {};
-  const s = i.store || {}, c = i.contact || {}, o = i.seo || {}, a = i.announcement || {}, k = i.checkout || {}, l = i.loyalty || {};
+  const s = i.store || {}, c = i.contact || {}, o = i.seo || {}, a = i.announcement || {};
   const b = base;
   return {
     store: {
@@ -116,18 +77,6 @@ function sanitize(input, base = DEFAULTS) {
       bgColor: color(a.bgColor, b.announcement.bgColor),
       textColor: color(a.textColor, b.announcement.textColor),
     },
-    checkout: {
-      salesOpen: bool(k.salesOpen, b.checkout.salesOpen),
-      closedMessage: str(k.closedMessage, 200, b.checkout.closedMessage) || DEFAULTS.checkout.closedMessage,
-      minOrder: num(k.minOrder, 0, 100000, b.checkout.minOrder),
-      maxQuantity: num(k.maxQuantity, 1, 99, b.checkout.maxQuantity, { integer: true }),
-      notice: str(k.notice, 300, b.checkout.notice),
-      couponsEnabled: bool(k.couponsEnabled, b.checkout.couponsEnabled),
-    },
-    loyalty: {
-      pointsPerReal: l.pointsPerReal === null || l.pointsPerReal === '' ? null : num(l.pointsPerReal, 0, 1000, b.loyalty.pointsPerReal),
-    },
-    card: sanitizeCard(i.card, b.card || DEFAULTS.card),
   };
 }
 
@@ -152,22 +101,7 @@ function publicView(s) {
     contact: s.contact,
     seo: s.seo,
     announcement: s.announcement.active && s.announcement.text ? s.announcement : { active: false },
-    checkout: {
-      salesOpen: s.checkout.salesOpen,
-      closedMessage: s.checkout.closedMessage,
-      minOrder: s.checkout.minOrder,
-      maxQuantity: s.checkout.maxQuantity,
-      notice: s.checkout.notice,
-      couponsEnabled: s.checkout.couponsEnabled,
-    },
   };
 }
 
-function pointsPerReal(s) {
-  const v = s.loyalty.pointsPerReal;
-  if (v !== null && v !== undefined) return v;
-  const env = Number(process.env.POINTS_PER_REAL);
-  return Number.isFinite(env) && env >= 0 ? env : 1;
-}
-
-module.exports = { DEFAULTS, sanitize, getSiteSettings, saveSiteSettings, publicView, pointsPerReal };
+module.exports = { DEFAULTS, sanitize, getSiteSettings, saveSiteSettings, publicView };

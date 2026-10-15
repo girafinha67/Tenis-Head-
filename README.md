@@ -91,82 +91,37 @@ netlify dev
 O `netlify dev` sobe o site e as functions juntos em `http://localhost:8888`,
 usando as mesmas variáveis de ambiente (pode criar um arquivo `.env` local).
 
-## 6. Pagamento PIX real via Mercado Pago + WhatsApp
+## 6. Vendas pelo WhatsApp (o site não cobra nada)
 
-Documentação oficial: https://www.mercadopago.com.br/developers/pt/reference (base `https://api.mercadopago.com`).
+O site é uma vitrine: **não há carrinho, checkout, Pix, cartão, cupom nem pedido pelo site**. A venda é fechada na conversa.
 
-### Fluxo
+Na página do produto o cliente escolhe a **numeração** e toca em **CHAMAR NO WHATSAPP**. Abre o chat com a loja já com:
 
 ```text
-Cliente escolhe produto/carrinho e preenche os dados (e-mail é obrigatório)
-  ↓  POST /api/payments/pix/create  (preço e estoque recalculados no servidor)
-Pedido PENDING, estoque reservado
-  ↓  POST https://api.mercadopago.com/v1/payments  { payment_method_id: "pix", transaction_amount, payer, external_reference }
-     — só pelo backend, Access Token no servidor, X-Idempotency-Key = id do pedido
-Cobrança real: id, qr_code (copia e cola), qr_code_base64, date_of_expiration  →  gravados no pedido (orders.mp_id)
+O <modelo do tênis> da numeração <numeração> ainda está disponível em estoque?
 
-Mercado Pago → POST /.netlify/functions/mercadopago-webhook?data.id=<id>&type=payment
-  ↓  valida x-signature (HMAC-SHA256 do manifest id;request-id;ts) — senão 401
-  ↓  consulta GET /v1/payments/<id> (fonte de verdade), confere valor e forma de pagamento
-  ↓  approved → pedido PAID + WhatsApp ao dono | rejected/cancelled → pedido FAILED e estoque devolvido
+<endereço da foto que está sendo exibida no site>
 ```
 
-A tela do checkout consulta `/api/payments/orders/:id`; se o pedido ainda está pendente, o servidor reconfirma
-na API do Mercado Pago (no máximo 1 consulta a cada 10 s por pedido). A função agendada `reconcile-payments`
-(a cada 10 min) é a rede de segurança caso algum webhook se perca.
+- A numeração é obrigatória (se o produto tem tamanhos cadastrados); sem ela o botão avisa o cliente e não abre o chat.
+- A foto é a que estava aparecendo na galeria no momento do clique. O link `wa.me` não permite anexar arquivo,
+  então a foto vai como endereço completo (https://...) e o WhatsApp mostra a prévia da imagem na conversa.
+- O número da loja vem do painel: **Configurações → WhatsApp (com DDD)**. Sem número preenchido o botão avisa em vez de abrir um link quebrado.
+- Cada clique é contado em Analytics ("Cliques WhatsApp").
+- Código: `public/js/whatsapp-link.js` (mensagem/link) e o final de `public/produto.html`.
 
-### Variáveis de ambiente
-
-| Variável | Para quê |
-|---|---|
-| `MERCADOPAGO_ACCESS_TOKEN` | Access Token de **produção** (Mercado Pago → Suas integrações → Credenciais de produção) |
-| `MERCADOPAGO_WEBHOOK_SECRET` | chave secreta do webhook (Suas integrações → Webhooks); valida o `x-signature` |
-| `MERCADOPAGO_NOTIFICATION_URL` | `https://SEU-SITE.netlify.app/.netlify/functions/mercadopago-webhook` (enviada em cada cobrança) |
-| `MERCADOPAGO_PIX_EXPIRATION_MINUTES` | opcional; validade do PIX (padrão `30`) |
-| `MERCADOPAGO_BASE_URL` | opcional; padrão `https://api.mercadopago.com` (HTTPS obrigatório) |
-| `MERCADOPAGO_TIMEOUT_MS` | opcional; padrão `8000` |
-
-### Configurar o webhook
-
-1. Mercado Pago → Suas integrações → sua aplicação → **Webhooks** → Configurar notificações.
-2. URL de produção: `https://SEU-SITE.netlify.app/.netlify/functions/mercadopago-webhook`
-   (arquivo `netlify/functions/mercadopago-webhook.js`). Evento: **Pagamentos**.
-3. Copie a **chave secreta** exibida para `MERCADOPAGO_WEBHOOK_SECRET` no Netlify.
-
-### Migração do banco
-
-Nada a fazer: `netlify/functions/lib/db.js` renomeia sozinho as colunas antigas (`promisse_*` → `mp_*`) e cria as
-novas. O mesmo SQL está em `migrations/2026-10-10_mercadopago.sql`, caso prefira rodar manualmente no Supabase.
-Pedidos antigos continuam intactos; cobranças PIX do provedor anterior ainda pendentes não são reconsultadas.
+As tabelas antigas de pedidos/cupons continuam no banco (nada foi apagado), mas nenhuma rota do site usa mais essas tabelas.
 
 ### Testes
 
-`npm test` roda 61 testes automatizados com fakes (sem rede, sem banco e sem pagamento real).
-
-## Cupons de desconto
-
-Painel → **Cupons** (`/admin/cupons.html`). Tudo vale no site em tempo real: o checkout consulta o servidor a cada tentativa.
-
-**Opções de cada cupom:** código (só letras e números, 3–32, sem diferenciar maiúsculas), descrição interna, tipo (% ou R$ fixo),
-desconto máximo (para %), pedido mínimo, início e fim da validade (com atalhos de duração), limite total de usos,
-limite por cliente (CPF/e-mail), só primeira compra, valer ou não em produtos já em promoção, escopo
-(todos / produtos específicos / categorias específicas) e ativo/pausado. A lista mostra status (ativo, agendado, expirado,
-esgotado, pausado), usos, desconto concedido e vendas; permite editar, duplicar, pausar, ver os pedidos que usaram e excluir
-(só se nunca foi usado).
-
-**Como funciona (servidor):** `POST /api/coupons/validate` calcula o desconto com preços do banco (limitado a 20 tentativas/10 min por IP).
-Ao criar o pedido o desconto é recalculado dentro da transação, com a linha do cupom travada (limites de uso não estouram com
-pedidos simultâneos), o uso é **reservado** e o valor do PIX já sai com desconto. Pedido expirado/falho devolve o uso; pagamento
-confirmado torna o uso definitivo. O PIX nunca cobra menos de R$ 0,50 (o desconto é limitado a isso).
-
-SQL: `migrations/2026-10-13_cupons.sql` (o app também aplica sozinho).
+`npm test` roda 20 testes (sem rede e sem banco): mensagem e link do WhatsApp, página do produto com DOM simulado
+e verificação de que não sobrou nada de pagamento no site.
 
 ## Configurações da loja
 
-Painel → **Configurações** (`/admin/configuracoes.html`): vendas abertas/pausadas (+ mensagem), pedido mínimo, máximo de unidades
-por produto, aviso no checkout, cupons ligados/desligados, pontos por real, aviso global no topo do site (texto, link, cores),
-WhatsApp/Instagram/e-mail/horário no rodapé, nome da loja, descrição do rodapé e título/descrição da home para o Google.
-As regras de checkout são aplicadas no servidor; o restante é aplicado no site a cada visita (`/api/settings/site`).
+Painel → **Configurações** (`/admin/configuracoes.html`): aviso global no topo do site (texto, link, cores),
+**WhatsApp** (usado no botão "Chamar no WhatsApp")/Instagram/e-mail/horário no rodapé, nome da loja, descrição do rodapé
+e título/descrição da home para o Google. Aplicado no site a cada visita (`/api/settings/site`).
 
 ## Feedbacks de clientes
 

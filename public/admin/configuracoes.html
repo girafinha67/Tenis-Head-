@@ -31,7 +31,6 @@
       <a href="index.html">Dashboard</a>
       <a href="produtos.html">Produtos</a>
       <a href="categorias.html">Categorias</a>
-      <a href="cupons.html">Cupons</a>
       <a href="feedbacks.html">Feedbacks</a>
       <a href="analytics.html">Análise de usuários</a>
       <a href="conteudo.html">Conteúdo da Home</a>
@@ -49,75 +48,12 @@
     <form id="settingsForm" class="settings-grid" novalidate>
 
       <section class="settings-card">
-        <h2>Vendas e checkout</h2>
-        <p>Regras aplicadas no servidor a cada pedido.</p>
-        <label class="checkbox-row"><input type="checkbox" id="k-open"> Vendas abertas (desmarque para pausar a loja)</label>
-        <div class="form-field full" style="margin-top:12px">
-          <label for="k-closed">Mensagem exibida com as vendas pausadas</label>
-          <input type="text" id="k-closed" maxlength="200">
-        </div>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="k-min">Pedido mínimo (R$)</label>
-            <input type="number" id="k-min" min="0" step="0.01" inputmode="decimal">
-            <div class="hint">0 = sem mínimo.</div>
-          </div>
-          <div class="form-field">
-            <label for="k-max">Máximo de unidades por produto</label>
-            <input type="number" id="k-max" min="1" max="99" step="1">
-          </div>
-        </div>
-        <div class="form-field full">
-          <label for="k-notice">Aviso no checkout (opcional)</label>
-          <input type="text" id="k-notice" maxlength="300" placeholder="Ex.: Pedidos pagos até 15h saem no mesmo dia">
-        </div>
-        <label class="checkbox-row"><input type="checkbox" id="k-coupons"> Permitir cupons de desconto no checkout</label>
-      </section>
-
-      <section class="settings-card">
-        <h2>Pagamento com cartão</h2>
-        <p>Crédito e débito pelo Mercado Pago. O cliente vê o valor de cada parcela já com o acréscimo, e o servidor refaz a conta na hora de cobrar. O cartão só aparece no checkout se a chave pública do Mercado Pago estiver configurada no Netlify (MERCADOPAGO_PUBLIC_KEY).</p>
-        <label class="checkbox-row"><input type="checkbox" id="cd-enabled"> Aceitar pagamento com cartão</label>
-        <label class="checkbox-row"><input type="checkbox" id="cd-credit"> Cartão de crédito</label>
-        <label class="checkbox-row"><input type="checkbox" id="cd-debit"> Cartão de débito</label>
-        <div class="form-grid" style="margin-top:12px">
-          <div class="form-field">
-            <label for="cd-max">Máximo de parcelas</label>
-            <input type="number" id="cd-max" min="1" max="12" step="1">
-          </div>
-          <div class="form-field">
-            <label for="cd-min">Valor mínimo da parcela (R$)</label>
-            <input type="number" id="cd-min" min="0" step="0.01" inputmode="decimal">
-            <div class="hint">Parcelas menores que isso não são oferecidas.</div>
-          </div>
-          <div class="form-field">
-            <label for="cd-debitfee">Acréscimo no débito (%)</label>
-            <input type="number" id="cd-debitfee" min="0" max="50" step="0.01" inputmode="decimal">
-          </div>
-        </div>
-        <h3 style="margin:18px 0 6px;font-size:1rem">Acréscimo por número de parcelas (% sobre o valor)</h3>
-        <div class="hint" style="margin-bottom:10px">Percentual total somado ao valor da compra. Ex.: 6x = 8,5% numa compra de R$ 100,00 vira R$ 108,50 em 6x de R$ 18,08. Use 0 para parcelar sem acréscimo. Os valores iniciais são exemplos: ajuste conforme as taxas da sua conta no Mercado Pago.</div>
-        <div class="form-grid" id="cd-rates"></div>
-        <div class="hint" style="margin-top:10px">Na conta do Mercado Pago, deixe o parcelamento <b>sem juros para o comprador</b>: o acréscimo já vai somado no valor cobrado pela loja.</div>
-      </section>
-
-      <section class="settings-card">
-        <h2>Pontos de fidelidade</h2>
-        <p>Pontos que o cliente ganha por real pago.</p>
-        <div class="form-field">
-          <label for="l-points">Pontos por R$ 1,00</label>
-          <input type="number" id="l-points" min="0" max="1000" step="0.01" inputmode="decimal" placeholder="Padrão do sistema (1)">
-          <div class="hint">Deixe vazio para usar o padrão.</div>
-        </div>
-      </section>
-
-      <section class="settings-card">
         <h2>Aviso no topo do site</h2>
         <p>Faixa exibida em todas as páginas (o visitante pode fechar).</p>
         <label class="checkbox-row"><input type="checkbox" id="a-active"> Mostrar aviso</label>
         <div class="form-field full" style="margin-top:12px">
           <label for="a-text">Texto</label>
-          <input type="text" id="a-text" maxlength="160" placeholder="Ex.: Use o cupom BEMVINDO10 na primeira compra!">
+          <input type="text" id="a-text" maxlength="160" placeholder="Ex.: Chegaram novos modelos! Chame no WhatsApp">
         </div>
         <div class="form-field full">
           <label for="a-link">Link ao clicar (opcional)</label>

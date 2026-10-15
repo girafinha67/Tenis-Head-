@@ -14,10 +14,8 @@ const uploadRoutes = require('./routes/uploads.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const trackRoutes = require('./routes/track.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
-const orderRoutes = require('./routes/orders.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const feedbackRoutes = require('./routes/feedbacks.routes');
-const couponRoutes = require('./routes/coupons.routes');
 
 const app = express();
 
@@ -82,10 +80,8 @@ apiRouter.use(productRoutes);
 apiRouter.use(categoryRoutes);
 apiRouter.use(uploadRoutes);
 apiRouter.use(dashboardRoutes);
-apiRouter.use(orderRoutes); // checkout, Pix e webhook público
 apiRouter.use(settingsRoutes); // conteúdo editável da home (topbar, hero, benefícios, banner)
 apiRouter.use(feedbackRoutes); // feedbacks de clientes: envio público + moderação em /admin/feedbacks
-apiRouter.use(couponRoutes); // POST /coupons/validate (público) + /admin/coupons/* (protegido)
 apiRouter.use(trackRoutes); // POST /track — público, evento de Analytics do visitante
 apiRouter.use(analyticsRoutes); // /admin/analytics/* — protegido pelo requireAuth acima
 apiRouter.use((req, res) => {

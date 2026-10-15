@@ -22,7 +22,7 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://*.mercadopago.com https://*.mercadolibre.com https://*.mlstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://viacep.com.br https://brasilapi.com.br https://*.supabase.co https://*.mercadopago.com https://*.mercadolibre.com https://*.mlstatic.com; frame-src https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https:"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co; frame-src https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 
 # Páginas /admin/* nunca devem ser indexadas nem cacheadas por proxies/CDN
 # intermediários (evita servir uma sessão antiga de outro navegador).
@@ -31,8 +31,3 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
     Cache-Control = "no-store"
-
-# Rede de segurança: reconsulta na API da Mercado Pago os pedidos PENDING e encerra os expirados.
-# O webhook (/.netlify/functions/mercadopago-webhook) é o caminho principal. Horário em UTC.
-[functions."reconcile-payments"]
-  schedule = "*/10 * * * *"

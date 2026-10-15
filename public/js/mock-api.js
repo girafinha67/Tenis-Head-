@@ -38,7 +38,7 @@
     benefits: [
       { icon: '🏆', title: 'Há anos no mercado', text: 'De tênis e moda.' },
       { icon: '↩️', title: 'Troca fácil', text: 'Até 7 dias depois que você receber.' },
-      { icon: '🔒', title: 'Pagamento seguro', text: 'Pix seguro, confirmação automática.' },
+      { icon: '🔒', title: 'Compra combinada', text: 'Você fecha tudo direto com a loja no WhatsApp.' },
       { icon: '🎧', title: 'Atendimento', text: 'Fale com a gente direto no WhatsApp.' },
     ],
     promoBanner: { active: true, eyebrow: 'PROMOÇÃO DE ATACADO', title: '🔥 COMPROU 2 PARES OU MAIS? GANHE R$ 30 DE DESCONTO EM CADA PAR!', subtitle: 'Leve 2 pares ou mais no atacado e cada par sai R$ 30 mais barato. Aproveite e monte o seu pedido!', ctaLabel: 'VER MODELOS NO ATACADO', ctaLink: 'catalogo.html' },
@@ -112,9 +112,6 @@
     if (path === '/api/track') return jsonResponse({ ok: true });
     if (path === '/api/auth/me') return jsonResponse({ error: 'Painel indisponível neste preview (sem backend).' }, 401);
     if (path === '/api/settings/home') return jsonResponse(HOME_DEFAULT);
-    if (/^\/api\/payments\/(pix|picpay)\/create(-cart)?$/.test(path)) {
-      return jsonResponse({ error: 'Pagamento indisponível neste preview (sem backend). Publique no Netlify com as variáveis do Mercado Pago configuradas para testar o Pix de verdade.' }, 400);
-    }
     return jsonResponse({ error: 'Rota de API não simulada neste preview: ' + path }, 404);
   }
 

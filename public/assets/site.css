@@ -1,4 +1,4 @@
-/* Tênis Head — sistema de design compartilhado (home, catálogo, produto, carrinho, favoritos) */
+/* Tênis Head — sistema de design compartilhado (home, catálogo, produto, favoritos) */
 :root{
   --ink:#0a0a0a;--paper:#ffffff;--surface:#f4f4f4;--surface-2:#eaeaea;--line:#e3e3e3;
   --mute:#75756e;--mute-dark:#9c9c95;
@@ -420,3 +420,11 @@ footer.site-footer .f-top,footer.site-footer .f-bottom{padding-left:clamp(20px,5
 .icon-btn .ico{display:block;width:100%;height:100%;background-color:currentColor;-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat}
 .icon-btn .ico-heart{-webkit-mask-image:url(icon-heart.png);mask-image:url(icon-heart.png)}
 .icon-btn .ico-cart{-webkit-mask-image:url(icon-cart.png);mask-image:url(icon-cart.png)}
+
+/* ---------- botão "Chamar no WhatsApp" (a venda é feita na conversa) ---------- */
+.btn.btn-wa{background:#1fa855;border-color:#1fa855;color:#fff;font-weight:700;letter-spacing:.04em}
+.btn.btn-wa:hover{background:#178a45;border-color:#178a45;color:#fff}
+.pdp-actions .row .btn-wa{flex:1}
+.wa-hint{margin:10px 0 0;font-size:.82rem;color:var(--mute)}
+.opt-btn.need{border-color:var(--red);animation:needPick .5s}
+@keyframes needPick{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}

@@ -71,7 +71,6 @@
     <div class="h-actions">
       <button class="icon-btn search-only" id="searchToggle" aria-label="Buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
       <a class="icon-btn" href="favoritos.html" aria-label="Favoritos"><span class="ico ico-heart" aria-hidden="true"></span><span class="icon-badge" id="favBadge">0</span></a>
-      <button class="icon-btn" id="cartToggle" aria-label="Carrinho"><span class="ico ico-cart" aria-hidden="true"></span><span class="icon-badge" id="cartBadge">0</span></button>
       <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -95,12 +94,6 @@
   </div>
 </div>
 
-<div class="drawer-scrim" id="cartScrim"></div>
-<aside class="drawer" id="cartDrawer" aria-label="Carrinho">
-  <div class="drawer-head"><h2>Carrinho</h2><button class="drawer-close" id="cartClose" aria-label="Fechar carrinho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="drawer-body" id="cartDrawerBody"></div>
-  <div class="drawer-foot" id="cartDrawerFoot"></div>
-</aside>
 
 <div class="toast-stack" id="toastStack"></div>
 
@@ -120,7 +113,6 @@
           <span class="pdp-price" id="pPrice"></span>
           <span class="pdp-price-old" id="pPriceOld" style="display:none"></span>
         </div>
-        <p class="pdp-installment" id="pInstallment"></p>
 
         <div class="pdp-section" id="sizeSection" style="display:none">
           <h4>Tamanho</h4>
@@ -130,27 +122,19 @@
           <h4>Cor</h4>
           <div class="opt-row" id="colorOptions"></div>
         </div>
-        <div class="pdp-section">
-          <h4>Quantidade</h4>
-          <div class="pdp-qty">
-            <button data-act="dec" aria-label="Diminuir">−</button>
-            <span id="qtyVal">1</span>
-            <button data-act="inc" aria-label="Aumentar">+</button>
-          </div>
-          <p class="stock-note" id="stockNote"></p>
-        </div>
+        <p class="stock-note" id="stockNote"></p>
 
         <div class="pdp-actions">
           <div class="row">
-            <button class="btn btn-dark" id="addCartBtn">ADICIONAR AO CARRINHO</button>
+            <a class="btn btn-wa" id="waBtn" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>CHAMAR NO WHATSAPP</span></a>
             <button class="fav-inline" id="favBtn" aria-label="Favoritar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2 5 5.4 5c2 0 3.4 1 4.6 2.6C11.2 6 12.6 5 14.6 5 18 5 19.6 8.4 18 11.7 15.5 16.4 12 21 12 21z"/></svg></button>
           </div>
-          <button class="btn btn-outline" id="buyNowBtn">COMPRAR AGORA</button>
+          <p class="wa-hint" id="waHint">Escolha a numeração e fale com a gente. A venda é feita pelo WhatsApp.</p>
         </div>
 
         <div class="pdp-meta-list">
           <div><span>Estoque</span><span id="metaStock"></span></div>
-          <div><span>Envio</span><span>A gente combina com você no WhatsApp, depois da compra</span></div>
+          <div><span>Envio</span><span>Combinado com você no WhatsApp</span></div>
           <div><span>Trocas</span><span>Até 7 dias depois de receber</span></div>
         </div>
 
@@ -182,13 +166,16 @@
 
 <script src="js/mock-api.js"></script>
 <script src="js/shop.js"></script>
+<script src="js/whatsapp-link.js"></script>
 <script>
 (function(){
   var money = RSShop.money;
   var qs = new URLSearchParams(location.search);
   var slug = qs.get('slug') || qs.get('produto');
   var product = null;
-  var selected = { size: null, color: null, qty: 1 };
+  var selected = { size: null, color: null };
+  var imageIndex = 0;
+  var storeNumber = '';
 
   if(!slug){ showNotFound(); return; }
 
@@ -215,6 +202,7 @@
     var mainEl = document.getElementById('galleryMain');
     var thumbsEl = document.getElementById('galleryThumbs');
     function setMain(i){
+      imageIndex = i; refreshWa();
       mainEl.innerHTML = images[i]
         ? '<img src="'+images[i]+'" alt="'+product.name+'">'
         : '<svg viewBox="0 0 200 100" style="width:70%;margin:auto;color:#cfcfcf"><use href="#shoe"/></svg>';
@@ -235,19 +223,15 @@
     } else {
       priceEl.textContent = money(product.price);
     }
-    var unitPrice = product.promo_price || product.price;
-    document.getElementById('pInstallment').textContent = 'ou em até 3x de ' + money(unitPrice/3) + ' sem juros · Pix cai na hora';
 
     if(product.sizes && product.sizes.length){
       document.getElementById('sizeSection').style.display = '';
       var sizeWrap = document.getElementById('sizeOptions');
       sizeWrap.innerHTML = product.sizes.map(function(s){ return '<button class="opt-btn" data-size="'+s+'">'+s+'</button>'; }).join('');
-      selected.size = product.sizes[0];
-      sizeWrap.querySelector('button').classList.add('active');
       sizeWrap.addEventListener('click', function(e){
         var b = e.target.closest('button'); if(!b) return;
-        sizeWrap.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
-        b.classList.add('active'); selected.size = b.dataset.size;
+        sizeWrap.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); x.classList.remove('need'); });
+        b.classList.add('active'); selected.size = b.dataset.size; refreshWa();
       });
     }
     if(product.colors && product.colors.length){
@@ -263,20 +247,11 @@
       });
     }
 
-    var qtyVal = document.getElementById('qtyVal');
-    document.querySelector('.pdp-qty').addEventListener('click', function(e){
-      var b = e.target.closest('button'); if(!b) return;
-      selected.qty = Math.max(1, Math.min(product.stock || 20, selected.qty + (b.dataset.act==='inc'?1:-1)));
-      qtyVal.textContent = selected.qty;
-    });
-
     var stockNote = document.getElementById('stockNote');
     var metaStock = document.getElementById('metaStock');
     if(product.stock <= 0){
       stockNote.textContent = 'Esgotado por enquanto.'; stockNote.classList.add('low');
       metaStock.textContent = 'Esgotado';
-      document.getElementById('addCartBtn').disabled = true;
-      document.getElementById('buyNowBtn').disabled = true;
     } else if(product.stock <= 5){
       stockNote.textContent = 'Restam só ' + product.stock + ' unidades.'; stockNote.classList.add('low');
       metaStock.textContent = 'Em estoque (' + product.stock + ')';
@@ -291,18 +266,36 @@
       favBtn.classList.toggle('active', RSShop.isFavorite(product.id));
     });
 
-    document.getElementById('addCartBtn').addEventListener('click', function(){
-      RSShop.addToCart({
-        productId: product.id, name: product.name, slug: product.slug,
-        image: (product.images && product.images[0]) || null,
-        price: unitPrice, quantity: selected.qty, size: selected.size, color: selected.color, stock: product.stock,
+    // ---- Chamar no WhatsApp: a venda é feita na conversa, o site não cobra nada ----
+    var waBtn = document.getElementById('waBtn');
+    var sizeSection = document.getElementById('sizeOptions');
+    refreshWa();
+    function refreshWa(){
+      if(!waBtn) return;
+      var img = images[imageIndex] || images[0] || null;
+      var url = window.TNWhatsApp.buildUrl({
+        number: storeNumber, name: product.name, size: selected.size,
+        imageUrl: window.TNWhatsApp.absoluteUrl(img, location.href),
       });
+      waBtn.setAttribute('href', url || 'https://wa.me/');
+    }
+    waBtn.addEventListener('click', function(e){
+      if(product.sizes && product.sizes.length && !selected.size){
+        e.preventDefault();
+        sizeSection.classList.add('need-pick');
+        sizeSection.querySelectorAll('button').forEach(function(x){ x.classList.add('need'); });
+        RSShop.toast('Escolha a numeração antes de chamar no WhatsApp');
+        sizeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if(!storeNumber){
+        e.preventDefault();
+        RSShop.toast('O WhatsApp da loja ainda não foi configurado.');
+      }
     });
-    document.getElementById('buyNowBtn').addEventListener('click', function(){
-      var params = new URLSearchParams({ produto: product.slug, quantity: selected.qty });
-      if(selected.size) params.set('size', selected.size);
-      if(selected.color) params.set('color', selected.color);
-      location.href = 'checkout.html?' + params.toString();
+    (window.TNSiteReady || Promise.resolve(null)).then(function(cfg){
+      var n = window.TNWhatsApp.normalizeNumber(cfg && cfg.contact && cfg.contact.whatsapp);
+      if(n){ storeNumber = n; refreshWa(); }
     });
 
     // relacionados: mesma(s) categoria(s), excluindo o produto atual

@@ -1,10 +1,9 @@
-// Tênis Head — carrinho, favoritos, busca, mini-cart e header, compartilhados
-// entre todas as páginas da loja. Carrinho/favoritos vivem no localStorage
-// do navegador (o site não tem contas de cliente hoje — só login de admin).
+// Tênis Head — favoritos, busca e header, compartilhados entre todas as páginas da loja.
+// Favoritos vivem no localStorage do navegador (o site não tem contas de cliente — só login de admin).
+// Não há carrinho nem pagamento no site: a venda é feita no WhatsApp (ver js/whatsapp-link.js).
 window.RSShop = (function () {
   'use strict';
 
-  var CART_KEY = 'rshoes_cart_v1';
   var FAV_KEY = 'rshoes_favorites_v1';
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -20,41 +19,6 @@ window.RSShop = (function () {
   }
   function writeJSON(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage indisponível — ignora */ }
-  }
-  function lineKey(item) { return item.productId + '|' + (item.size || '') + '|' + (item.color || ''); }
-
-  // ---------------- cart ----------------
-  function getCart() { return readJSON(CART_KEY, []); }
-  function saveCart(cart) { writeJSON(CART_KEY, cart); renderBadges(); renderDrawer(); }
-  function cartCount(cart) { return (cart || getCart()).reduce(function (n, it) { return n + it.quantity; }, 0); }
-
-  function addToCart(item, opts) {
-    opts = opts || {};
-    var cart = getCart();
-    var key = lineKey(item);
-    var existing = cart.find(function (it) { return lineKey(it) === key; });
-    if (existing) existing.quantity = Math.min(20, existing.quantity + (item.quantity || 1));
-    else cart.push({ productId: item.productId, name: item.name, slug: item.slug, image: item.image,
-      price: item.price, quantity: item.quantity || 1, size: item.size || null, color: item.color || null, stock: item.stock });
-    saveCart(cart);
-    if (!opts.silent) {
-      toast((item.name || 'Produto') + ' adicionado ao carrinho');
-      openDrawer();
-    }
-  }
-  function updateCartQuantity(key, quantity) {
-    var cart = getCart();
-    var it = cart.find(function (i) { return lineKey(i) === key; });
-    if (!it) return;
-    it.quantity = Math.max(1, Math.min(20, quantity));
-    saveCart(cart);
-  }
-  function removeFromCart(key) {
-    saveCart(getCart().filter(function (i) { return lineKey(i) !== key; }));
-  }
-  function clearCart() { saveCart([]); }
-  function cartSubtotal(cart) {
-    return (cart || getCart()).reduce(function (sum, it) { return sum + Number(it.price || 0) * it.quantity; }, 0);
   }
 
   // ---------------- favorites ----------------
@@ -81,13 +45,7 @@ window.RSShop = (function () {
 
   // ---------------- badges ----------------
   function renderBadges() {
-    var cartBadge = document.getElementById('cartBadge');
     var favBadge = document.getElementById('favBadge');
-    if (cartBadge) {
-      var n = cartCount();
-      cartBadge.textContent = n > 9 ? '9+' : String(n);
-      cartBadge.classList.toggle('show', n > 0);
-    }
     if (favBadge) {
       var f = getFavorites().length;
       favBadge.textContent = f > 9 ? '9+' : String(f);
@@ -108,82 +66,6 @@ window.RSShop = (function () {
       el.classList.remove('show');
       setTimeout(function () { el.remove(); }, 350);
     }, 2600);
-  }
-
-  // ---------------- mini-cart drawer ----------------
-  function drawerItemHtml(it) {
-    var img = it.image
-      ? '<img src="' + it.image + '" alt="">'
-      : '<div style="width:76px;height:76px;background:var(--surface)"></div>';
-    var meta = [it.size ? 'Tam. ' + it.size : null, it.color || null].filter(Boolean).join(' · ');
-    var key = lineKey(it);
-    return '<div class="drawer-item" data-key="' + key + '">' + img +
-      '<div style="flex:1">' +
-        '<div class="di-name">' + it.name + '</div>' +
-        (meta ? '<div class="di-meta">' + meta + '</div>' : '') +
-        '<div class="di-row">' +
-          '<div class="qty-ctrl">' +
-            '<button data-act="dec" aria-label="Diminuir">−</button>' +
-            '<span>' + it.quantity + '</span>' +
-            '<button data-act="inc" aria-label="Aumentar">+</button>' +
-          '</div>' +
-          '<div>' + money(Number(it.price) * it.quantity) + '</div>' +
-        '</div>' +
-        '<button class="di-remove" data-act="remove">Remover</button>' +
-      '</div>' +
-    '</div>';
-  }
-  function renderDrawer() {
-    var body = document.getElementById('cartDrawerBody');
-    var foot = document.getElementById('cartDrawerFoot');
-    if (!body || !foot) return;
-    var cart = getCart();
-    if (!cart.length) {
-      body.innerHTML = '<p class="drawer-empty">Seu carrinho está vazio.</p>';
-      foot.innerHTML = '<a class="btn btn-outline" href="catalogo.html">EXPLORAR A LOJA</a>';
-      return;
-    }
-    body.innerHTML = cart.map(drawerItemHtml).join('');
-    foot.innerHTML =
-      '<div class="drawer-subtotal"><span>Subtotal</span><span>' + money(cartSubtotal(cart)) + '</span></div>' +
-      '<a class="btn btn-dark" href="carrinho.html">IR PARA O CARRINHO</a>' +
-      '<a class="drawer-link" href="catalogo.html">Continuar comprando</a>';
-  }
-  function openDrawer() {
-    var scrim = document.getElementById('cartScrim'), drawer = document.getElementById('cartDrawer');
-    if (!scrim || !drawer) return;
-    renderDrawer();
-    scrim.classList.add('open'); drawer.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeDrawer() {
-    var scrim = document.getElementById('cartScrim'), drawer = document.getElementById('cartDrawer');
-    if (!scrim || !drawer) return;
-    scrim.classList.remove('open'); drawer.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  function wireDrawer() {
-    var body = document.getElementById('cartDrawerBody');
-    var toggle = document.getElementById('cartToggle');
-    var close = document.getElementById('cartClose');
-    var scrim = document.getElementById('cartScrim');
-    if (toggle) toggle.addEventListener('click', openDrawer);
-    if (close) close.addEventListener('click', closeDrawer);
-    if (scrim) scrim.addEventListener('click', closeDrawer);
-    if (body) body.addEventListener('click', function (e) {
-      var item = e.target.closest('.drawer-item');
-      if (!item) return;
-      var key = item.dataset.key;
-      var act = e.target.dataset.act;
-      if (act === 'remove') return removeFromCart(key);
-      if (act === 'inc' || act === 'dec') {
-        var cart = getCart();
-        var it = cart.find(function (i) { return lineKey(i) === key; });
-        if (!it) return;
-        updateCartQuantity(key, it.quantity + (act === 'inc' ? 1 : -1));
-        if (it.quantity <= 1 && act === 'dec') { /* mantém mínimo 1 — remover é ação explícita */ }
-      }
-    });
   }
 
   // ---------------- search overlay ----------------
@@ -292,7 +174,7 @@ window.RSShop = (function () {
         '<button class="pc-fav' + (fav ? ' active' : '') + '" data-id="' + p.id + '" data-name="' + p.name.replace(/"/g, '&quot;') + '" aria-pressed="' + fav + '" aria-label="Favoritar">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2 5 5.4 5c2 0 3.4 1 4.6 2.6C11.2 6 12.6 5 14.6 5 18 5 19.6 8.4 18 11.7 15.5 16.4 12 21 12 21z"/></svg>' +
         '</button>' +
-        '<div class="pc-quick"><button data-quick-add="' + p.id + '">Adicionar ao carrinho</button></div>' +
+        '<div class="pc-quick"><button data-quick-view="' + encodeURIComponent(p.slug) + '">Ver produto</button></div>' +
       '</div>' +
       '<a class="pc-info" href="produto.html?slug=' + encodeURIComponent(p.slug) + '">' +
         '<div class="pc-brand">' + (p.brand || '') + '</div>' +
@@ -312,17 +194,10 @@ window.RSShop = (function () {
         toggleFavorite(favBtn.dataset.id, { name: favBtn.dataset.name });
         return;
       }
-      var quickBtn = e.target.closest('[data-quick-add]');
+      var quickBtn = e.target.closest('[data-quick-view]');
       if (quickBtn) {
         e.preventDefault();
-        var id = Number(quickBtn.dataset.quickAdd);
-        var p = productsById && productsById[id];
-        if (!p) return;
-        addToCart({
-          productId: p.id, name: p.name, slug: p.slug,
-          image: (p.images && p.images[0]) || null,
-          price: p.promo_price || p.price, quantity: 1, stock: p.stock,
-        });
+        location.href = 'produto.html?slug=' + quickBtn.dataset.quickView;
       }
     });
   }
@@ -330,9 +205,7 @@ window.RSShop = (function () {
   function init() {
     wireHeader();
     wireSearch();
-    wireDrawer();
     renderBadges();
-    renderDrawer();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -340,10 +213,8 @@ window.RSShop = (function () {
 
   return {
     money: money, toast: toast,
-    getCart: getCart, addToCart: addToCart, updateCartQuantity: updateCartQuantity,
-    removeFromCart: removeFromCart, clearCart: clearCart, cartSubtotal: cartSubtotal, cartCount: cartCount, lineKey: lineKey,
     getFavorites: getFavorites, isFavorite: isFavorite, toggleFavorite: toggleFavorite,
-    renderBadges: renderBadges, openDrawer: openDrawer, closeDrawer: closeDrawer,
+    renderBadges: renderBadges,
     observeReveal: observeReveal, productCardHtml: productCardHtml, wireProductGrid: wireProductGrid,
   };
 })();
