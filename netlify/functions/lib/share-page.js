@@ -25,6 +25,23 @@ function pickImage(product, index, origin) {
   }
 }
 
+// O WhatsApp só mostra o cartão se a foto for leve (cerca de 300 KB). Fotos de produto costumam passar disso,
+// então a foto vai pelo redimensionador do próprio Netlify (/.netlify/images) quando está no Supabase ou no site.
+function cardImage(image, origin) {
+  if (!image) return '';
+  try {
+    const u = new URL(image);
+    const o = new URL(origin);
+    let src = '';
+    if (u.hostname === o.hostname) src = u.pathname + u.search;
+    else if (/\.supabase\.co$/i.test(u.hostname)) src = u.href;
+    if (!src) return image;
+    return `${o.origin}/.netlify/images?url=${encodeURIComponent(src)}&w=700&fm=jpg&q=75`;
+  } catch {
+    return image;
+  }
+}
+
 function formatPrice(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
@@ -32,7 +49,11 @@ function formatPrice(v) {
 
 function renderSharePage({ product, origin, index, storeName = 'Tênis Head' }) {
   const target = `${origin}/produto.html?slug=${encodeURIComponent(product.slug)}`;
-  const image = pickImage(product, index, origin);
+  const image = cardImage(pickImage(product, index, origin), origin);
+  const i = Number.isInteger(index) && index >= 0 ? index : 0;
+  // og:url e canonical apontam para ESTA página: se apontassem para a página do produto (sem tags Open Graph),
+  // o WhatsApp leria aquela e o cartão ficaria sem foto.
+  const self = `${origin}/p/${encodeURIComponent(product.slug)}?i=${i}`;
   const price = formatPrice(product.promo_price || product.price);
   const title = `${product.name}${product.brand ? ' · ' + product.brand : ''}`;
   const desc = [price, storeName].filter(Boolean).join(' · ');
@@ -47,12 +68,13 @@ function renderSharePage({ product, origin, index, storeName = 'Tênis Head' }) 
 <meta property="og:site_name" content="${escapeHtml(storeName)}">
 <meta property="og:title" content="${t}">
 <meta property="og:description" content="${escapeHtml(desc)}">
-<meta property="og:url" content="${escapeHtml(target)}">
+<meta property="og:url" content="${escapeHtml(self)}">
 ${image ? `<meta property="og:image" content="${escapeHtml(image)}">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:alt" content="${t}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="${escapeHtml(image)}">` : '<meta name="twitter:card" content="summary">'}
-<link rel="canonical" href="${escapeHtml(target)}">
+<link rel="canonical" href="${escapeHtml(self)}">
 <script>location.replace(${JSON.stringify(target).replace(/</g, '\\u003c')});</script>
 </head>
 <body>
@@ -61,4 +83,4 @@ ${image ? `<meta property="og:image" content="${escapeHtml(image)}">
 </html>`;
 }
 
-module.exports = { renderSharePage, pickImage, escapeHtml };
+module.exports = { renderSharePage, pickImage, cardImage, escapeHtml };

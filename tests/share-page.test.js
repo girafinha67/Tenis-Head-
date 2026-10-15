@@ -14,7 +14,7 @@ const P = { slug: 'air-force-1', name: 'Air Force 1', brand: 'Nike', price: 599,
 
 test('tem og:image com a foto escolhida (?i=), nome e preço', () => {
   const html = renderSharePage({ product: P, origin: ORIGIN, index: 1 });
-  assert.match(html, /<meta property="og:image" content="https:\/\/zok\.supabase\.co\/[^"]*\/b\.jpg">/);
+  assert.match(html, /<meta property="og:image" content="https:\/\/loja\.app\/\.netlify\/images\?url=https%3A%2F%2Fzok\.supabase\.co%2F[^"]*%2Fb\.jpg&amp;w=700&amp;fm=jpg&amp;q=75">/);
   assert.match(html, /<meta property="og:title" content="Air Force 1 · Nike">/);
   assert.match(html, /og:description" content="R\$\s?499,90 · Tênis Head"/);
   assert.match(html, /twitter:card" content="summary_large_image"/);
@@ -51,4 +51,27 @@ test('sem foto cadastrada a página continua válida (sem og:image)', () => {
 test('redirecionamento /p/:slug existe no netlify.toml', () => {
   const toml = fs.readFileSync(path.join(__dirname, '../netlify.toml'), 'utf8');
   assert.match(toml, /from = "\/p\/:slug"\s+to = "\/\.netlify\/functions\/api\/share\/:slug"/);
+});
+
+test('a function atende /p/<slug> (o Netlify repassa o caminho original, não o reescrito)', () => {
+  const src = fs.readFileSync(path.join(__dirname, '../netlify/functions/routes/products.routes.js'), 'utf8');
+  assert.match(src, /\['\/share\/:slug', '\/p\/:slug'\]/);
+});
+
+test('og:url e canonical apontam para a própria página /p/ (senão o WhatsApp lê a página sem foto)', () => {
+  const html = renderSharePage({ product: P, origin: ORIGIN, index: 1 });
+  assert.ok(html.includes('<meta property="og:url" content="https://loja.app/p/air-force-1?i=1">'));
+  assert.ok(html.includes('<link rel="canonical" href="https://loja.app/p/air-force-1?i=1">'));
+});
+
+test('foto do site vai pelo redimensionador com caminho relativo; host desconhecido fica como está', () => {
+  const { cardImage } = require('../netlify/functions/lib/share-page');
+  assert.equal(cardImage('https://loja.app/assets/x.jpg', ORIGIN), 'https://loja.app/.netlify/images?url=%2Fassets%2Fx.jpg&w=700&fm=jpg&q=75');
+  assert.equal(cardImage('https://outro.com/x.jpg', ORIGIN), 'https://outro.com/x.jpg');
+});
+
+test('netlify.toml libera o redimensionador para fotos do Supabase', () => {
+  const toml = fs.readFileSync(path.join(__dirname, '../netlify.toml'), 'utf8');
+  assert.match(toml, /\[images\]\s+remote_images = \[/);
+  assert.match(toml, /supabase/);
 });

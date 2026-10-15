@@ -209,8 +209,10 @@ router.get(
 
 // GET /api/share/:slug?i=<foto> (público) — também servido em /p/:slug (ver netlify.toml).
 // Página com as tags Open Graph que o WhatsApp usa para mostrar a foto do produto na conversa.
+// O Netlify entrega à function o caminho ORIGINAL da requisição (/p/<slug>), não o reescrito (/share/<slug>);
+// por isso a rota atende os dois endereços.
 router.get(
-  '/share/:slug',
+  ['/share/:slug', '/p/:slug'],
   asyncHandler(async (req, res) => {
     const row = await db.get('SELECT * FROM products WHERE slug = ? AND active = 1', [req.params.slug]);
     if (!row) return res.status(404).type('text/plain').send('Produto não encontrado.');

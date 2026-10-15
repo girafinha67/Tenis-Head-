@@ -2,6 +2,9 @@
   publish = "public"
   command = "npm install"
 
+[images]
+  remote_images = ["https://.*\\.supabase\\.co/.*"]
+
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
