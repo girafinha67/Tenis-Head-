@@ -136,13 +136,14 @@ a.hero-slide{cursor:pointer}
 
 /* ---------- brand strip ---------- */
 .brands{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:28px 0;overflow:hidden}
-.brands-row{display:flex;align-items:center;gap:0}
-.brands-track{display:flex;gap:52px;white-space:nowrap;animation:brandScroll 28s linear infinite}
-.brands:hover .brands-track{animation-play-state:paused}
+.brands-row{display:block;overflow:hidden}
+/* Faixa infinita: dois grupos idênticos lado a lado; a faixa anda 50% (um grupo) para a esquerda e volta ao início sem pulo. */
+.brands-track{display:flex;width:max-content;white-space:nowrap;animation:brandScroll 28s linear infinite;will-change:transform}
+.brands-group{display:flex;flex-shrink:0;gap:52px;padding-right:52px}
+@media (hover:hover){.brands:hover .brands-track{animation-play-state:paused}}
 .brands-track a{font-family:'Space Grotesk';font-weight:700;font-size:1.15rem;text-transform:uppercase;letter-spacing:.02em;opacity:.55;transition:opacity .2s}
 .brands-track a:hover{opacity:1}
 @keyframes brandScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@media(prefers-reduced-motion:reduce){.brands-track{animation:none;flex-wrap:wrap;overflow-x:auto}}
 
 /* ---------- categories ---------- */
 .cat-carousel-wrap{position:relative}

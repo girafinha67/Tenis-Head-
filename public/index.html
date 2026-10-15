@@ -458,6 +458,19 @@
     catNext.addEventListener('click', function(){ scrollBy(1); });
   }
 
+  // Marcas rolando sem parar para a esquerda: repete a lista até um grupo cobrir a tela e usa dois grupos iguais.
+  function buildBrandsMarquee(track, brands){
+    var esc = function(v){ return String(v).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); };
+    var one = brands.map(function(b){ return '<a href="catalogo.html?brand='+encodeURIComponent(b)+'">'+esc(b)+'</a>'; }).join('');
+    var group = function(n, hidden){ var h = ''; for(var i=0;i<n;i++) h += one; return '<div class="brands-group"'+(hidden?' aria-hidden="true"':'')+'>'+h+'</div>'; };
+    track.innerHTML = group(1);
+    var w = track.firstChild.getBoundingClientRect().width || 1;
+    var reps = Math.max(1, Math.ceil(Math.max(window.innerWidth, window.screen.width || 0) * 1.5 / w));
+    track.innerHTML = group(reps) + group(reps, true);
+    var gw = track.firstChild.getBoundingClientRect().width || 1;
+    track.style.animationDuration = Math.max(12, gw / 60) + 's'; // ~60 px por segundo
+  }
+
   var grid = document.getElementById('productGrid');
   fetch('/api/products?sort=relevant&pageSize=8')
     .then(function(r){ return r.json(); })
@@ -467,8 +480,7 @@
       var brandsTrack = document.getElementById('brandsTrack');
       if(brands.length){
         document.getElementById('brandsWrap').style.display = '';
-        var chunk = brands.concat(brands);
-        brandsTrack.innerHTML = chunk.map(function(b){ return '<a href="catalogo.html?brand='+encodeURIComponent(b)+'">'+b+'</a>'; }).join('');
+        buildBrandsMarquee(brandsTrack, brands);
       }
       if(!list.length){
         grid.innerHTML = '<p style="grid-column:1/-1;color:var(--mute);text-align:center;padding:40px 0">Tênis novos chegando em breve.</p>';
