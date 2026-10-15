@@ -153,9 +153,9 @@ O painel (`/admin/*`) é responsivo (`public/css/admin-mobile.css` + `public/js/
 ## 8. Categorias: como o catálogo encontra o produto
 
 O formulário de produto grava a categoria em `products.category_tags`
-(slugs `low`, `high`, `slip-on`, `skate`, `edicao-limitada`, `vans`), enquanto os
+(slugs `low`, `high`, `slip-on`, `skate`, `edicao-limitada`, `vans`, `puma`), enquanto os
 filtros do catálogo e os cards da home usam os slugs da tabela `categories`
-(`nike`, `adidas`, `new-balance`, `infantis`, `linha-premium`, `vans`).
+(`nike`, `adidas`, `new-balance`, `infantis`, `linha-premium`, `vans`, `puma`).
 `CATEGORY_SLUG_TO_TAG` em `netlify/functions/lib/category-tags.js` liga os dois, e
 `GET /api/products?category=...` procura por `category_id` **ou** pela tag. Se
 você criar uma categoria nova, adicione o par nesse mapa e em `category-tags.js`

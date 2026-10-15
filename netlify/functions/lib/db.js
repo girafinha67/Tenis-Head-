@@ -513,6 +513,7 @@ const REAL_CATEGORIES = [
   { name: 'Infantis', slug: 'infantis', image: '/assets/categories/infantis.jpg', description: 'Resistência para o street.', order_index: 4 },
   { name: 'Linha premium', slug: 'linha-premium', image: '/assets/categories/linha-premium.jpg', description: 'Peças exclusivas e numeradas.', order_index: 5 },
   { name: 'Vans', slug: 'vans', image: '/assets/categories/vans.jpg', description: 'Clássicos street e skate.', order_index: 6 },
+  { name: 'Puma', slug: 'puma', image: '/assets/categories/puma.jpg', description: 'Performance e estilo de rua.', order_index: 7 },
 ];
 
 async function seed() {
@@ -524,6 +525,24 @@ async function seed() {
       await run(insertCat, [c.name, c.slug, c.image, c.description, c.order_index]);
     }
   }
+  await ensurePumaCategory();
+}
+
+// Lojas que já estavam no ar não têm a categoria Puma (a semente só roda com a tabela vazia).
+// Cria uma única vez, marcando em `settings`: se o admin apagar a Puma depois, ela não volta sozinha.
+async function ensurePumaCategory() {
+  const done = await get("SELECT value FROM settings WHERE key = 'seed_categoria_puma'");
+  if (done) return;
+  const exists = await get("SELECT id FROM categories WHERE slug = 'puma'");
+  if (!exists) {
+    const puma = REAL_CATEGORIES.find((c) => c.slug === 'puma');
+    const maxRow = await get('SELECT MAX(order_index) AS m FROM categories');
+    await run(
+      'INSERT INTO categories (name, slug, image, description, order_index, active) VALUES (?, ?, ?, ?, ?, 1)',
+      [puma.name, puma.slug, puma.image, puma.description, (Number(maxRow && maxRow.m) || 0) + 1]
+    );
+  }
+  await run("INSERT INTO settings (key, value) VALUES ('seed_categoria_puma', '1') ON CONFLICT (key) DO NOTHING");
 }
 
 function verifyPasswordScrypt(password, salt, expectedHash) {

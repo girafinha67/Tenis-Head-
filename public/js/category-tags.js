@@ -10,4 +10,5 @@ window.RSHOES_CATEGORY_TAGS = [
   { slug: 'skate', label: 'Infantis' },
   { slug: 'edicao-limitada', label: 'Linha premium' },
   { slug: 'vans', label: 'Vans' },
+  { slug: 'puma', label: 'Puma' },
 ];

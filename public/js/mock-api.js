@@ -17,6 +17,7 @@
     { id: 4, name: 'Infantis', slug: 'skate', image: 'assets/categories/infantis.jpg', description: 'Resistência para o street.', order_index: 4, active: true },
     { id: 5, name: 'Linha premium', slug: 'edicao-limitada', image: 'assets/categories/linha-premium.jpg', description: 'Peças exclusivas e numeradas.', order_index: 5, active: true },
     { id: 6, name: 'Vans', slug: 'vans', image: 'assets/categories/vans.jpg', description: 'Clássicos street e skate.', order_index: 6, active: true },
+    { id: 7, name: 'Puma', slug: 'puma', image: 'assets/categories/puma.jpg', description: 'Performance e estilo de rua.', order_index: 7, active: true },
   ];
 
   function daysAgo(n) { return new Date(Date.now() - n * 86400000).toISOString(); }

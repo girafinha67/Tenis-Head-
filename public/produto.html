@@ -11,12 +11,22 @@
 <link rel="stylesheet" href="assets/site.css">
 <style>
 .pdp{padding:clamp(120px,18vw,168px) 0 clamp(64px,10vw,120px)}
-.pdp-layout{display:grid;grid-template-columns:1fr;gap:40px}
-@media(min-width:900px){.pdp-layout{grid-template-columns:1.1fr 1fr;gap:64px}}
-.gallery-main{aspect-ratio:1/1;background:var(--surface);overflow:hidden;position:relative}
-.gallery-main img{width:100%;height:100%;object-fit:cover}
-.gallery-thumbs{display:flex;gap:10px;margin-top:12px}
-.gallery-thumbs button{width:70px;height:70px;background:var(--surface);border:1.5px solid transparent;overflow:hidden;flex-shrink:0}
+.pdp-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:40px}
+@media(min-width:900px){.pdp-layout{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:64px}}
+.pdp-layout>div{min-width:0}
+.gallery-main{aspect-ratio:1/1;background:var(--surface);overflow:hidden;position:relative;touch-action:pan-y}
+.gallery-main .gm-img{width:100%;height:100%;display:flex}
+.gallery-main img{width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none}
+.gm-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.28);color:#fff;opacity:.85;cursor:pointer;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);transition:opacity .2s,background .2s}
+.gm-arrow:hover{opacity:1;background:rgba(0,0,0,.42)}
+.gm-arrow:active{opacity:1}
+.gm-arrow.prev{left:10px}.gm-arrow.next{right:10px}
+.gm-arrow svg{width:22px;height:22px}
+.gm-arrow[hidden]{display:none}
+/* Miniaturas embaixo da foto grande: uma linha que rola para o lado, sem alargar a página */
+.gallery-thumbs{display:flex;gap:10px;margin-top:12px;overflow-x:auto;position:relative;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.gallery-thumbs::-webkit-scrollbar{display:none}
+.gallery-thumbs button{width:70px;height:70px;background:var(--surface);border:1.5px solid transparent;overflow:hidden;flex-shrink:0;padding:0}
 .gallery-thumbs button.active{border-color:var(--ink)}
 .gallery-thumbs img{width:100%;height:100%;object-fit:cover}
 .pdp-brand{font-size:.78rem;letter-spacing:.06em;color:var(--mute);text-transform:uppercase}
@@ -103,7 +113,11 @@
     <div id="loadingMsg" style="padding:60px 0;color:var(--mute)">Carregando produto…</div>
     <div id="pdpApp" class="pdp-layout" style="display:none">
       <div>
-        <div class="gallery-main" id="galleryMain"></div>
+        <div class="gallery-main" id="galleryMain">
+          <div class="gm-img" id="galleryImg"></div>
+          <button type="button" class="gm-arrow prev" id="galPrev" aria-label="Foto anterior" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <button type="button" class="gm-arrow next" id="galNext" aria-label="Próxima foto" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+        </div>
         <div class="gallery-thumbs" id="galleryThumbs"></div>
       </div>
       <div>
@@ -199,21 +213,42 @@
     document.getElementById('pDesc').textContent = product.description || 'Sem descrição adicional para este produto.';
 
     var images = product.images && product.images.length ? product.images : [null];
-    var mainEl = document.getElementById('galleryMain');
+    var galleryEl = document.getElementById('galleryMain');
+    var mainEl = document.getElementById('galleryImg');
     var thumbsEl = document.getElementById('galleryThumbs');
+    var prevBtn = document.getElementById('galPrev');
+    var nextBtn = document.getElementById('galNext');
     function setMain(i){
       imageIndex = i; refreshWa();
       mainEl.innerHTML = images[i]
-        ? '<img src="'+images[i]+'" alt="'+product.name+'">'
+        ? '<img src="'+images[i]+'" alt="'+product.name+'" draggable="false">'
         : '<svg viewBox="0 0 200 100" style="width:70%;margin:auto;color:#cfcfcf"><use href="#shoe"/></svg>';
-      thumbsEl.querySelectorAll('button').forEach(function(b,idx){ b.classList.toggle('active', idx===i); });
+      thumbsEl.querySelectorAll('button').forEach(function(b,idx){
+        var on = idx===i; b.classList.toggle('active', on);
+        if(on) thumbsEl.scrollTo({ left: b.offsetLeft - (thumbsEl.clientWidth - b.offsetWidth)/2, behavior: 'smooth' });
+      });
     }
+    function go(step){ setMain((imageIndex + step + images.length) % images.length); }
     thumbsEl.innerHTML = images.length > 1 ? images.map(function(img,i){
-      return '<button data-i="'+i+'">'+(img?'<img src="'+img+'" alt="">':'')+'</button>';
+      return '<button data-i="'+i+'" aria-label="Foto '+(i+1)+'">'+(img?'<img src="'+img+'" alt="">':'')+'</button>';
     }).join('') : '';
     thumbsEl.addEventListener('click', function(e){
       var b = e.target.closest('button'); if(!b) return; setMain(Number(b.dataset.i));
     });
+    if(images.length > 1){
+      prevBtn.hidden = false; nextBtn.hidden = false;
+      prevBtn.addEventListener('click', function(){ go(-1); });
+      nextBtn.addEventListener('click', function(){ go(1); });
+      // deslizar o dedo na foto também troca de imagem
+      var tx = null, ty = null;
+      galleryEl.addEventListener('touchstart', function(e){ tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+      galleryEl.addEventListener('touchend', function(e){
+        if(tx === null) return;
+        var dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+        tx = ty = null;
+        if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
+      }, { passive: true });
+    }
     setMain(0);
 
     var priceEl = document.getElementById('pPrice'), oldEl = document.getElementById('pPriceOld');
