@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>Cupons | Painel Tênis Head</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../css/catalogo.css">
+<link rel="stylesheet" href="../css/admin-mobile.css">
+<style>
+.pill-warn{background:rgba(10,10,10,.16);color:#0a0a0a}.pill-bad{background:rgba(225,6,0,.14);color:#e10600}
+.coupon-code{font-family:var(--font-display,inherit);font-weight:800;letter-spacing:.06em}
+.muted-sm{color:var(--grey);font-size:.78rem}
+.picker{border:1px solid var(--line);border-radius:8px;max-height:200px;overflow:auto;padding:8px;background:var(--black-1,transparent)}
+.picker label{display:flex;gap:8px;align-items:center;padding:5px 4px;font-size:.88rem;text-transform:none;letter-spacing:0;color:inherit;font-weight:500;cursor:pointer}
+.picker input{width:auto}
+.inline-row{display:flex;gap:8px}.inline-row input{flex:1}.inline-row .btn{white-space:nowrap}
+.modal-card.wide{max-width:720px;max-height:92vh;overflow:auto}
+.hint{font-size:.76rem;color:var(--grey);margin-top:-4px}
+.toolbar-filters{display:flex;gap:8px;flex-wrap:wrap}.toolbar-filters input,.toolbar-filters select{padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:transparent;color:inherit;font:inherit}
+</style>
+</head>
+<body class="admin-body">
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <img src="../assets/logo.png" alt="Tênis Head" class="admin-logo-img"> <span>Tênis Head <em style="color:var(--gold-bright); font-style:normal;">Admin</em></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html">Dashboard</a>
+      <a href="produtos.html">Produtos</a>
+      <a href="categorias.html">Categorias</a>
+      <a href="cupons.html" class="active">Cupons</a>
+      <a href="feedbacks.html">Feedbacks</a>
+      <a href="analytics.html">Análise de usuários</a>
+      <a href="conteudo.html">Conteúdo da Home</a>
+      <a href="configuracoes.html">Configurações</a>
+      <a href="#" id="logoutBtn">Sair</a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Cupons de desconto</h1>
+      <span class="admin-email" id="adminEmail"></span>
+    </div>
+
+    <div class="stat-grid" id="statGrid">
+      <div class="stat-card"><div class="n" id="st-active">–</div><div class="l">Cupons ativos</div></div>
+      <div class="stat-card"><div class="n" id="st-uses">–</div><div class="l">Usos em pedidos pagos</div></div>
+      <div class="stat-card"><div class="n" id="st-discount">–</div><div class="l">Desconto concedido</div></div>
+      <div class="stat-card"><div class="n" id="st-revenue">–</div><div class="l">Vendas com cupom</div></div>
+    </div>
+
+    <div class="admin-toolbar">
+      <div class="toolbar-filters">
+        <input type="search" id="searchInput" placeholder="Buscar código…" aria-label="Buscar cupom">
+        <select id="statusFilter" aria-label="Filtrar por status">
+          <option value="">Todos os status</option>
+          <option value="active">Ativos</option>
+          <option value="scheduled">Agendados</option>
+          <option value="expired">Expirados</option>
+          <option value="exhausted">Esgotados</option>
+          <option value="paused">Pausados</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" id="newCouponBtn" type="button">+ Novo cupom</button>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>Código</th><th>Desconto</th><th>Validade</th><th>Usos</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody id="couponsBody"><tr><td colspan="6">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+    <p class="muted-sm" style="margin-top:12px">Alterações valem na hora no site: o checkout consulta o cupom no servidor a cada tentativa.</p>
+  </main>
+</div>
+
+<!-- Modal cupom -->
+<div class="modal-backdrop" id="couponModalBackdrop">
+  <div class="modal-card wide">
+    <h3 id="couponModalTitle">Novo cupom</h3>
+    <form id="couponForm" novalidate>
+      <input type="hidden" id="cp-id">
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="cp-code">Código do cupom</label>
+          <div class="inline-row">
+            <input type="text" id="cp-code" maxlength="32" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="EX: BEMVINDO10">
+            <button type="button" class="btn btn-ghost" id="cp-gen">Gerar</button>
+          </div>
+          <div class="hint">Somente letras e números, de 3 a 32 caracteres. Maiúsculas/minúsculas não importam.</div>
+        </div>
+        <div class="form-field">
+          <label for="cp-description">Descrição interna (opcional)</label>
+          <input type="text" id="cp-description" maxlength="200" placeholder="Ex.: campanha de Black Friday">
+        </div>
+
+        <div class="form-field">
+          <label for="cp-type">Tipo de desconto</label>
+          <select id="cp-type"><option value="percent">Porcentagem (%)</option><option value="fixed">Valor fixo (R$)</option></select>
+        </div>
+        <div class="form-field">
+          <label for="cp-value" id="cp-value-label">Valor do desconto (%)</label>
+          <input type="number" id="cp-value" min="0" step="0.01" inputmode="decimal">
+        </div>
+        <div class="form-field" id="cp-max-wrap">
+          <label for="cp-max">Desconto máximo em R$ (opcional)</label>
+          <input type="number" id="cp-max" min="0" step="0.01" inputmode="decimal" placeholder="Sem limite">
+        </div>
+        <div class="form-field">
+          <label for="cp-min">Pedido mínimo em R$ (opcional)</label>
+          <input type="number" id="cp-min" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+        </div>
+
+        <div class="form-field">
+          <label for="cp-start">Início da validade</label>
+          <input type="datetime-local" id="cp-start">
+          <div class="hint">Vazio = vale desde já.</div>
+        </div>
+        <div class="form-field">
+          <label for="cp-end">Fim da validade</label>
+          <input type="datetime-local" id="cp-end">
+          <div class="hint">Vazio = sem data para acabar.</div>
+        </div>
+        <div class="form-field full">
+          <label for="cp-duration">Atalho de duração (a partir do início, ou de agora)</label>
+          <select id="cp-duration">
+            <option value="">Escolher duração…</option>
+            <option value="24">24 horas</option><option value="72">3 dias</option><option value="168">7 dias</option>
+            <option value="360">15 dias</option><option value="720">30 dias</option><option value="2160">90 dias</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="cp-usage">Limite total de usos (opcional)</label>
+          <input type="number" id="cp-usage" min="1" step="1" placeholder="Ilimitado">
+        </div>
+        <div class="form-field">
+          <label for="cp-per">Limite por cliente (opcional)</label>
+          <input type="number" id="cp-per" min="1" step="1" placeholder="Ilimitado">
+          <div class="hint">Conta por CPF ou e-mail.</div>
+        </div>
+
+        <div class="form-field full">
+          <label for="cp-applies">Onde o cupom vale</label>
+          <select id="cp-applies">
+            <option value="all">Todos os produtos</option>
+            <option value="products">Só produtos específicos</option>
+            <option value="categories">Só categorias específicas</option>
+          </select>
+        </div>
+        <div class="form-field full" id="cp-products-wrap" style="display:none">
+          <label>Produtos</label>
+          <input type="search" id="cp-products-search" placeholder="Buscar produto…">
+          <div class="picker" id="cp-products"></div>
+        </div>
+        <div class="form-field full" id="cp-categories-wrap" style="display:none">
+          <label>Categorias</label>
+          <div class="picker" id="cp-categories"></div>
+        </div>
+      </div>
+
+      <label class="checkbox-row"><input type="checkbox" id="cp-first"> Só para a primeira compra do cliente</label>
+      <label class="checkbox-row"><input type="checkbox" id="cp-promo" checked> Vale também para produtos que já estão em promoção</label>
+      <label class="checkbox-row" style="margin-bottom:6px"><input type="checkbox" id="cp-active" checked> Cupom ativo</label>
+      <div class="hint" style="margin-top:8px">O PIX cobra no mínimo R$ 0,50: se o desconto zerasse o pedido, ele é limitado automaticamente.</div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="couponCancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-gold" id="couponSaveBtn">Salvar cupom</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal usos -->
+<div class="modal-backdrop" id="usesModalBackdrop">
+  <div class="modal-card wide">
+    <h3 id="usesTitle">Usos do cupom</h3>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Desconto</th><th>Total</th><th>Status</th><th>Data</th></tr></thead>
+        <tbody id="usesBody"><tr><td colspan="6">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="modal-actions"><button type="button" class="btn btn-ghost" id="usesCloseBtn">Fechar</button></div>
+  </div>
+</div>
+
+<!-- Modal exclusão -->
+<div class="modal-backdrop" id="deleteModalBackdrop">
+  <div class="modal-card" style="max-width:420px;">
+    <h3>Excluir cupom?</h3>
+    <p class="confirm-text">Só é possível excluir cupons que nunca foram usados. Se já houve pedidos, use "Pausar" para manter o histórico.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="deleteCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-gold" style="background:#e10600; border-color:#e10600;" id="deleteConfirmBtn">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/admin-common.js"></script>
+<script src="../js/admin-cupons.js"></script>
+</body>
+</html>
