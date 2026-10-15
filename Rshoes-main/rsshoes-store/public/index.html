@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tênis Head | Tênis e Streetwear em São Luís</title>
+<meta name="description" content="Tênis Head: tênis escolhidos a dedo em São Luís, Maranhão. Dá uma olhada na nossa coleção.">
+<meta property="og:title" content="Tênis Head | Tênis e Streetwear em São Luís">
+<meta property="og:description" content="Tênis escolhidos a dedo em São Luís, Maranhão.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.manifesto{background:var(--ink);color:#fff}
+.manifesto .map-title{font-size:clamp(2.2rem,6vw,4.4rem);text-transform:uppercase;color:#fff}
+.manifesto .map-addr{color:#cfcfcf;margin:12px 0 22px;font-size:1rem}
+.map-tabs{display:flex;gap:8px;margin-bottom:12px}
+.map-tab{padding:9px 18px;border:1px solid #fff;color:#fff;font-size:.8rem;font-weight:600;letter-spacing:.04em}
+.map-tab.active{background:#e10600;border-color:#e10600}
+.map-box{border:2px solid #e10600;background:#111;height:clamp(300px,52vw,460px)}
+.map-box iframe{width:100%;height:100%;border:0;display:block}
+.map-btn{margin-top:18px;background:#e10600;border-color:#e10600;color:#fff}
+.map-btn:hover{background:#fff;border-color:#fff;color:#0a0a0a}
+</style>
+</head>
+<body>
+
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="shoe" viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 78 C8 62 22 58 34 56 C50 53 58 44 66 34 C74 24 84 18 98 18 C110 18 116 24 122 30 C130 38 140 42 154 44 C170 46 186 52 190 66 C192 74 188 80 178 82 L20 82 C12 82 8 82 8 78 Z"/>
+    <path d="M34 56 C42 62 56 66 76 66 C104 66 128 60 146 50"/>
+    <path d="M66 34 L78 52 M84 27 L94 50 M100 21 L108 52"/>
+    <path d="M8 78 L190 78" stroke-width="1.2" opacity=".5"/>
+  </symbol>
+</svg>
+
+<div class="topbar" id="topbar"><div class="topbar-track" id="topbarTrack"><span>Carregando…</span></div></div>
+
+<header class="site-header" id="siteHeader">
+  <div class="bar">
+    <a class="logo" href="index.html"><img class="logo-img" src="assets/logo.png" alt="Tênis Head"></a>
+    <nav class="main">
+      <a class="active" href="index.html">Home</a>
+      <a href="catalogo.html">Loja</a>
+      <a href="index.html#sobre">Sobre nós</a>
+    </nav>
+    <div class="h-actions">
+      <button class="icon-btn search-only" id="searchToggle" aria-label="Buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+      <a class="icon-btn" href="favoritos.html" aria-label="Favoritos"><span class="ico ico-heart" aria-hidden="true"></span><span class="icon-badge" id="favBadge">0</span></a>
+      <button class="icon-btn" id="cartToggle" aria-label="Carrinho"><span class="ico ico-cart" aria-hidden="true"></span><span class="icon-badge" id="cartBadge">0</span></button>
+      <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<nav class="mobile-menu" id="mobileMenu">
+  <button class="mm-close" id="mmClose" aria-label="Fechar menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <a href="index.html">Home</a>
+  <a href="catalogo.html">Loja</a>
+  <a href="favoritos.html">Favoritos</a>
+  <a href="index.html#sobre">Sobre nós</a>
+</nav>
+
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-panel">
+    <div class="search-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="Buscar produtos, marcas…" autocomplete="off">
+      <button class="search-close" id="searchClose" aria-label="Fechar busca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<div class="drawer-scrim" id="cartScrim"></div>
+<aside class="drawer" id="cartDrawer" aria-label="Carrinho">
+  <div class="drawer-head"><h2>Carrinho</h2><button class="drawer-close" id="cartClose" aria-label="Fechar carrinho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="drawer-body" id="cartDrawerBody"></div>
+  <div class="drawer-foot" id="cartDrawerFoot"></div>
+</aside>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<section class="hero" id="hero">
+  <div class="hero-carousel" id="heroCarousel"></div>
+</section>
+
+<div class="brands" id="brandsWrap" style="display:none">
+  <div class="wrap">
+    <p class="eyebrow" style="margin-bottom:16px">PRINCIPAIS MARCAS</p>
+  </div>
+  <div class="brands-row"><div class="brands-track" id="brandsTrack"></div></div>
+</div>
+
+<section class="section" id="categorias">
+  <div class="wrap">
+    <div class="sec-head reveal"><h2>Compre por categoria</h2></div>
+    <div class="cat-carousel-wrap">
+      <button class="cat-nav cat-prev" id="catPrev" aria-label="Categoria anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <div class="cat-carousel" id="catGrid">
+        <p style="color:var(--mute)">Carregando categorias…</p>
+      </div>
+      <button class="cat-nav cat-next" id="catNext" aria-label="Próxima categoria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<section class="manifesto section reveal" id="onde-ficamos">
+  <div class="wrap">
+    <p class="eyebrow" style="color:#e10600;margin-bottom:14px">LOJA FÍSICA</p>
+    <h2 class="map-title">Onde ficamos?</h2>
+    <p class="map-addr">Tênis Sneakers — R. Venezuela, Olho d'Água, São Luís — MA, 65065-260</p>
+    <div class="map-tabs" role="tablist">
+      <button type="button" class="map-tab active" data-view="m">Mapa</button>
+      <button type="button" class="map-tab" data-view="k">Satélite 3D</button>
+    </div>
+    <div class="map-box">
+      <iframe id="storeMap" title="Localização da Tênis Head no Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen
+        src="https://www.google.com/maps?q=T%C3%AAnis+sneakers+R.+Venezuela+Olho+D%27agua+S%C3%A3o+Lu%C3%ADs+MA+65065-260&amp;z=18&amp;hl=pt-BR&amp;output=embed"></iframe>
+    </div>
+    <a class="btn map-btn" href="https://maps.app.goo.gl/NEKR8N39xcmh6SHC8" target="_blank" rel="noopener">ABRIR NO GOOGLE MAPS (3D / ROTAS)</a>
+  </div>
+</section>
+<script>
+(function(){
+  var f=document.getElementById('storeMap'); if(!f) return;
+  var base='https://www.google.com/maps?q=T%C3%AAnis+sneakers+R.+Venezuela+Olho+D%27agua+S%C3%A3o+Lu%C3%ADs+MA+65065-260&z=18&hl=pt-BR&output=embed';
+  Array.prototype.forEach.call(document.querySelectorAll('.map-tab'),function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.map-tab'),function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      f.src=base+(b.getAttribute('data-view')==='k'?'&t=k':'');
+    });
+  });
+})();
+</script>
+
+<section class="section" id="destaques">
+  <div class="wrap">
+    <div class="sec-head reveal"><h2>Mais vendidos</h2><a class="sec-link" href="catalogo.html">VER TUDO →</a></div>
+    <div class="products" id="productGrid"></div>
+  </div>
+</section>
+
+<section class="promo-banner" id="promoBanner" style="display:none">
+  <div class="pb-bg" id="promoBg"></div>
+  <div class="wrap">
+    <p class="pb-eyebrow" id="promoEyebrow"></p>
+    <h2 id="promoTitle"></h2>
+    <p id="promoSubtitle"></p>
+    <a class="btn btn-outline" id="promoCta"></a>
+  </div>
+</section>
+
+<section class="section" style="padding-top:56px;padding-bottom:56px">
+  <div class="wrap">
+    <div class="benefits" id="benefitsGrid"></div>
+  </div>
+</section>
+
+<section class="feedbacks section" id="feedbacks">
+  <div class="wrap reveal">
+    <p class="eyebrow">NOSSOS CLIENTES</p>
+    <h2>Quem comprou,<br>aprovou</h2>
+    <p class="fb-sub">Fotos e vídeos de clientes recebendo os pedidos.</p>
+  </div>
+  <div class="fb-track" id="fbTrack" tabindex="0" aria-label="Feedbacks de clientes"></div>
+  <p class="fb-hint" id="fbHint" hidden>← arraste para o lado para ver mais →</p>
+  <div class="wrap fb-cta">
+    <button type="button" class="btn fb-add" id="fbOpen">ADICIONAR FEEDBACK</button>
+  </div>
+</section>
+
+<div class="fb-modal" id="fbModal" hidden>
+  <div class="fb-backdrop" data-fb-close></div>
+  <div class="fb-dialog" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+    <button type="button" class="fb-x" data-fb-close aria-label="Fechar">✕</button>
+    <div id="fbFormView">
+      <h3 id="fbTitle">Adicionar feedback</h3>
+      <p class="fb-note">Mande uma foto ou vídeo do seu pedido. Ele aparece no site depois que a gente aprovar.</p>
+      <form id="fbForm" novalidate>
+        <label class="fb-field"><span>Nome completo</span>
+          <input type="text" id="fbName" autocomplete="name" maxlength="120" placeholder="Seu nome e sobrenome" required></label>
+        <label class="fb-field"><span>Produto que você comprou</span>
+          <input type="text" id="fbProduct" maxlength="120" placeholder="Ex: Nike Dunk Low" required></label>
+        <label class="fb-field"><span>Data da compra</span>
+          <input type="date" id="fbDate" required></label>
+        <div class="fb-field"><span>Foto ou vídeo</span>
+          <label class="fb-file" for="fbFile" id="fbFileLabel">
+            <span id="fbFileText">Toque para escolher (foto até 8 MB, vídeo até 50 MB)</span>
+          </label>
+          <input type="file" id="fbFile" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm" hidden>
+          <div class="fb-preview" id="fbPreview" hidden></div>
+        </div>
+        <div class="fb-progress" id="fbProgress" hidden><i id="fbBar"></i></div>
+        <p class="fb-error" id="fbError" role="alert" hidden></p>
+        <button type="submit" class="btn fb-submit" id="fbSubmit">ENVIAR FEEDBACK</button>
+      </form>
+    </div>
+    <div id="fbDoneView" hidden>
+      <h3>Valeu pelo feedback! ❤️</h3>
+      <p class="fb-note">Recebemos o seu envio. Assim que a gente aprovar, ele aparece aqui no site.</p>
+      <button type="button" class="btn fb-submit" data-fb-close>FECHAR</button>
+    </div>
+  </div>
+</div>
+
+<section class="section" id="sobre">
+  <div class="wrap reveal" style="max-width:760px">
+    <p class="eyebrow" style="margin-bottom:14px">SOBRE A TÊNIS HEAD</p>
+    <h2 style="font-size:clamp(1.8rem,5vw,2.8rem);text-transform:uppercase;margin-bottom:18px">Feita pra quem é de São Luís</h2>
+    <p style="color:var(--mute);font-size:1.05rem">A Tênis Head é uma loja de tênis em São Luís, no Maranhão. Aqui o tênis é mais que calçado: é o jeito de mostrar o seu estilo.</p>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap f-top">
+    <div class="f-brand">
+      <div class="logo"><img class="logo-img" src="assets/logo.png" alt="Tênis Head"></div>
+      <p>Tênis e streetwear escolhidos a dedo em São Luís, Maranhão.</p>
+    </div>
+    <div>
+      <h4>Loja</h4>
+      <ul>
+        <li><a href="catalogo.html">Todos os produtos</a></li>
+        <li><a href="favoritos.html">Favoritos</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Atendimento</h4>
+      <ul>
+        <li><a class="f-contact f-zap" data-whatsapp href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span>Chamar no zap</span></a></li>
+        <li><a class="f-contact f-insta" data-fixed-link href="https://instagram.com/tenis__head_?xtok=MWRwcXZ6djZkank3aw%3D%3D" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg><span>Instagram</span></a></li>
+        <li><a href="index.html#sobre">Entrega e trocas</a></li>
+        <li><a href="carrinho.html">Meu carrinho</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Empresa</h4>
+      <ul>
+        <li><a href="index.html#sobre">Sobre nós</a></li>
+      </ul>
+    </div>
+    <div class="f-newsletter">
+      <h4>Newsletter</h4>
+      <p>Novidades, lançamentos e promoções direto no seu e-mail.</p>
+      <form id="newsForm" class="f-news-form">
+        <input type="email" id="newsEmail" placeholder="Seu e-mail" required>
+        <button type="submit">ASSINAR</button>
+      </form>
+      <p class="f-news-msg" id="newsMsg">Pronto, você já está na lista!</p>
+    </div>
+  </div>
+  <div class="wrap f-bottom">
+    <span>© 2026 Tênis Head. Todos os direitos reservados.</span>
+    <span>São Luís, MA</span>
+  </div>
+</footer>
+
+<script src="js/mock-api.js"></script>
+<script src="js/shop.js"></script>
+<script src="js/feedbacks.js"></script>
+<script>
+(function(){
+  // ---- Conteúdo real de fallback, embutido na própria página. ----
+  // A home NUNCA fica em branco esperando banco de dados: renderizamos
+  // este conteúdo de imediato, e só substituímos por dados vindos da API
+  // (banco/admin) se ela responder de forma válida a tempo. Se a API não
+  // responder, estiver fora do ar, ou o banco não estiver configurado, o
+  // que já está na tela permanece — nunca gera "Categorias em breve." nem
+  // seções vazias.
+  var FALLBACK_HOME_CONTENT = {
+    topbar: [
+      'FRETE GRÁTIS EM PEDIDOS ACIMA DE R$ 499',
+      'PAGOU NO PIX, SEU PEDIDO SAI PRIMEIRO',
+    ],
+    hero: [
+      { image: 'assets/hero/nike-air-force-black.jpg', link: 'catalogo.html?brand=Nike' },
+      { image: 'assets/hero/nike-jordan-travis-scott.jpg', link: 'catalogo.html?brand=Nike' },
+      { image: 'assets/hero/nike-air-force-verde.jpg', link: 'catalogo.html?brand=Nike' },
+    ],
+    benefits: [
+      { icon: '🚚', title: 'Frete grátis', text: 'Em pedidos acima de R$ 499.' },
+      { icon: '↩️', title: 'Troca fácil', text: 'Até 7 dias depois que você receber.' },
+      { icon: '🔒', title: 'Pagamento seguro', text: 'Pix seguro, confirmação automática.' },
+      { icon: '🎧', title: 'Atendimento', text: 'Fale com a gente direto no WhatsApp.' },
+    ],
+    promoBanner: {
+      active: true,
+      eyebrow: 'PROMOÇÃO DE ATACADO',
+      title: '🔥 COMPROU 2 PARES OU MAIS? GANHE R$ 30 DE DESCONTO EM CADA PAR!',
+      subtitle: 'Leve 2 pares ou mais no atacado e cada par sai R$ 30 mais barato. Aproveite e monte o seu pedido!',
+      ctaLabel: 'VER MODELOS NO ATACADO',
+      ctaLink: 'catalogo.html',
+    },
+  };
+  var FALLBACK_CATEGORIES = [
+    { name: 'Nike', slug: 'nike', image: 'assets/categories/nike.jpg' },
+    { name: 'Adidas', slug: 'adidas', image: 'assets/categories/adidas.jpg' },
+    { name: 'New Balance', slug: 'new-balance', image: 'assets/categories/new-balance.jpg' },
+    { name: 'Infantis', slug: 'infantis', image: 'assets/categories/infantis.jpg' },
+    { name: 'Linha premium', slug: 'linha-premium', image: 'assets/categories/linha-premium.jpg' },
+    { name: 'Vans', slug: 'vans', image: 'assets/categories/vans.jpg' },
+  ];
+
+  // Busca com prazo máximo: se a API não responder de forma válida dentro
+  // de TIMEOUT_MS, seguimos com o fallback em vez de deixar a home esperando.
+  var TIMEOUT_MS = 2500;
+  function fetchJsonWithTimeout(url){
+    var timedOut = { ok: false, data: null };
+    var reqPromise = fetch(url)
+      .then(function(r){
+        return r.json().catch(function(){ return null; }).then(function(data){
+          return { ok: r.ok, data: data };
+        });
+      })
+      .catch(function(){ return { ok: false, data: null }; });
+    var timeoutPromise = new Promise(function(resolve){
+      setTimeout(function(){ resolve(timedOut); }, TIMEOUT_MS);
+    });
+    return Promise.race([reqPromise, timeoutPromise]);
+  }
+
+  // ---- topbar + hero + benefícios + banner ----
+  function renderHome(content){
+    var track = document.getElementById('topbarTrack');
+    var msgs = content.topbar || [];
+    track.innerHTML = msgs.concat(msgs).map(function(m){ return '<span>'+m+'</span>'; }).join('');
+
+    // Hero: apenas imagens de fundo, com crossfade automático a cada 4s (sem texto/botões).
+    // Também dá pra passar arrastando com o dedo (touch) ou o mouse.
+    var slides = content.hero || [];
+    var heroCarousel = document.getElementById('heroCarousel');
+    function heroBg(s){
+      return s.image
+        ? '<img src="'+s.image+'" alt="">'
+        : '<svg viewBox="0 0 200 100" fill="none" stroke="#0a0a0a" stroke-width="1"><use href="#shoe"/></svg>';
+    }
+    heroCarousel.innerHTML = slides.map(function(s, i){
+      var cls = 'hero-slide'+(i===0?' active':'');
+      var st = s.image ? ' style="--bg:url(\''+s.image+'\')"' : '';
+      return s.link
+        ? '<a class="'+cls+'" href="'+s.link+'" draggable="false"'+st+'>'+heroBg(s)+'</a>'
+        : '<div class="'+cls+'"'+st+'>'+heroBg(s)+'</div>';
+    }).join('');
+    var heroSlideEls = heroCarousel.querySelectorAll('.hero-slide');
+    if(heroSlideEls.length > 1){
+      var heroIdx = 0;
+      var heroAuto;
+      function heroShow(i){
+        heroSlideEls[heroIdx].classList.remove('active');
+        heroIdx = (i + heroSlideEls.length) % heroSlideEls.length;
+        heroSlideEls[heroIdx].classList.add('active');
+      }
+      function heroNext(){ heroShow(heroIdx+1); }
+      function heroPrev(){ heroShow(heroIdx-1); }
+      function heroRestartAuto(){ clearInterval(heroAuto); heroAuto = setInterval(heroNext, 4000); }
+      heroRestartAuto();
+
+      // arrastar com o dedo (touch)
+      var heroStartX = null;
+      var heroDragged = false;
+      heroCarousel.addEventListener('click', function(e){ if(heroDragged){ e.preventDefault(); heroDragged = false; } });
+      heroCarousel.addEventListener('touchstart', function(e){ heroStartX = e.touches[0].clientX; }, {passive:true});
+      heroCarousel.addEventListener('touchend', function(e){
+        if(heroStartX==null) return;
+        var dx = e.changedTouches[0].clientX - heroStartX;
+        if(Math.abs(dx) > 40){ dx < 0 ? heroNext() : heroPrev(); heroRestartAuto(); heroDragged = true; setTimeout(function(){ heroDragged = false; }, 350); }
+        heroStartX = null;
+      }, {passive:true});
+
+      // arrastar com o mouse
+      var heroMouseDownX = null;
+      heroCarousel.addEventListener('mousedown', function(e){ heroMouseDownX = e.clientX; e.preventDefault(); });
+      window.addEventListener('mouseup', function(e){
+        if(heroMouseDownX==null) return;
+        var dx = e.clientX - heroMouseDownX;
+        if(Math.abs(dx) > 40){ dx < 0 ? heroNext() : heroPrev(); heroRestartAuto(); heroDragged = true; setTimeout(function(){ heroDragged = false; }, 350); }
+        heroMouseDownX = null;
+      });
+
+      // scroll do mouse/trackpad (roda horizontal ou vertical)
+      var heroWheelLock = false;
+      heroCarousel.addEventListener('wheel', function(e){
+        var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        if(Math.abs(delta) < 12 || heroWheelLock) return;
+        heroWheelLock = true;
+        delta > 0 ? heroNext() : heroPrev();
+        heroRestartAuto();
+        setTimeout(function(){ heroWheelLock = false; }, 500);
+      }, {passive:true});
+    }
+
+    document.getElementById('benefitsGrid').innerHTML = (content.benefits||[]).map(function(b){
+      return '<div class="benefit"><div class="b-icon">'+b.icon+'</div><div><h3>'+b.title+'</h3><p>'+b.text+'</p></div></div>';
+    }).join('');
+
+    var promoEl = document.getElementById('promoBanner');
+    if(content.promoBanner && content.promoBanner.active){
+      var pb = content.promoBanner;
+      document.getElementById('promoEyebrow').textContent = pb.eyebrow || '';
+      document.getElementById('promoTitle').textContent = pb.title || '';
+      document.getElementById('promoSubtitle').textContent = pb.subtitle || '';
+      var cta = document.getElementById('promoCta');
+      cta.textContent = pb.ctaLabel || 'VER MODELOS NO ATACADO';
+      cta.href = pb.ctaLink || 'catalogo.html';
+      promoEl.style.display = '';
+    } else {
+      promoEl.style.display = 'none';
+    }
+  }
+
+  renderHome(FALLBACK_HOME_CONTENT);
+  fetchJsonWithTimeout('/api/settings/home').then(function(res){
+    if(res.ok && res.data && Array.isArray(res.data.topbar)){
+      renderHome(res.data);
+    }
+  });
+
+  // ---- categorias ----
+  var BRAND_LOGOS = [
+    [/new\s*balance|^nb$/i, 'assets/logos/new-balance.png'],
+    [/nike/i, 'assets/logos/nike.png'],
+    [/adidas/i, 'assets/logos/adidas.png'],
+    [/infantil|infantis|kids/i, 'assets/logos/infantis.png'],
+    [/puma/i, 'assets/logos/puma.png'],
+    [/vans/i, 'assets/logos/vans.png'],
+    [/premium|jordan/i, 'assets/logos/jordan.png']
+  ];
+  function brandLogo(name){
+    name = String(name || '');
+    for(var i=0;i<BRAND_LOGOS.length;i++){ if(BRAND_LOGOS[i][0].test(name)) return BRAND_LOGOS[i][1]; }
+    return '';
+  }
+  function renderCategories(cats){
+    var grid = document.getElementById('catGrid');
+    grid.innerHTML = cats.map(function(c){
+      var logo = brandLogo(c.name || c.slug);
+      var img = logo ? '<img class="cc-logo" src="'+logo+'" alt="'+c.name+'">' : (c.image ? '<img src="'+c.image+'" alt="">' : '');
+      return '<a class="cat-circle reveal" href="catalogo.html?category='+encodeURIComponent(c.slug)+'">'+
+        '<div class="cc-ring">'+img+'</div>'+
+        '<h3>'+c.name+'</h3></a>';
+    }).join('');
+    RSShop.observeReveal(grid);
+  }
+
+  renderCategories(FALLBACK_CATEGORIES);
+  fetchJsonWithTimeout('/api/categories').then(function(res){
+    if(res.ok && res.data && Array.isArray(res.data.categories) && res.data.categories.length){
+      renderCategories(res.data.categories);
+    }
+  });
+
+  var catPrev = document.getElementById('catPrev'), catNext = document.getElementById('catNext');
+  if(catPrev && catNext){
+    var catGridEl = document.getElementById('catGrid');
+    var scrollBy = function(dir){ catGridEl.scrollBy({left: dir * (catGridEl.clientWidth * 0.7), behavior: 'smooth'}); };
+    catPrev.addEventListener('click', function(){ scrollBy(-1); });
+    catNext.addEventListener('click', function(){ scrollBy(1); });
+  }
+
+  var grid = document.getElementById('productGrid');
+  fetch('/api/products?sort=relevant&pageSize=8')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var list = (data && data.products) || [];
+      var brands = (data && data.brands) || [];
+      var brandsTrack = document.getElementById('brandsTrack');
+      if(brands.length){
+        document.getElementById('brandsWrap').style.display = '';
+        var chunk = brands.concat(brands);
+        brandsTrack.innerHTML = chunk.map(function(b){ return '<a href="catalogo.html?brand='+encodeURIComponent(b)+'">'+b+'</a>'; }).join('');
+      }
+      if(!list.length){
+        grid.innerHTML = '<p style="grid-column:1/-1;color:var(--mute);text-align:center;padding:40px 0">Tênis novos chegando em breve.</p>';
+        return;
+      }
+      var byId = {}; list.forEach(function(p){ byId[p.id]=p; });
+      grid.innerHTML = list.map(RSShop.productCardHtml).join('');
+      RSShop.wireProductGrid(grid, byId);
+      grid.querySelectorAll('.product-card').forEach(function(el){ el.classList.add('reveal'); });
+      RSShop.observeReveal(grid);
+    })
+    .catch(function(){
+      grid.innerHTML = '<p style="grid-column:1/-1;color:var(--mute);text-align:center;padding:40px 0">Não deu pra carregar os produtos agora. Tenta de novo daqui a pouco.</p>';
+    });
+
+  RSShop.observeReveal(document);
+
+  document.getElementById('newsForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    document.getElementById('newsMsg').style.display = 'block';
+    this.reset();
+  });
+})();
+</script>
+<script src="js/site-settings.js"></script>
+<script src="js/video-widget.js"></script>
+
+</body>
+</html>

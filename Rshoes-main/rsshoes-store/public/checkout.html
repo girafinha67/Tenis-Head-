@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checkout | Tênis Head</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--surface:#101010;--surface2:#171717;--line:#3b3b3b;--line-hi:#e8e8e8;--tx:#fff;--mute:#9c9c9c;--err:#ff6b63;--ok:#4cd98a;--accent:#e10600;box-sizing:border-box}
+*{box-sizing:inherit}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 16px/1.4 Inter,system-ui,sans-serif;min-height:100vh}
+a{color:inherit}button{font:inherit;color:inherit}
+.hidden{display:none!important}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+/* topo */
+.brand{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;max-width:560px;margin:0 auto}
+.brand img{height:40px;width:auto}.brand a.back{font-size:.85rem;color:var(--mute);text-decoration:none}
+.sumbar{position:sticky;top:0;z-index:30;background:var(--bg);border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a}
+.sumbar .wrap{display:flex;justify-content:space-between;align-items:center;min-height:56px}
+.link{background:none;border:0;padding:0;color:var(--tx);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:1rem}
+.link.sm{font-size:.9rem}
+#sumToggle .chev{display:inline-block;margin-right:8px;transition:transform .2s}
+#sumToggle[aria-expanded=true] .chev{transform:rotate(180deg)}
+#topTotal{font-weight:700;font-size:1.35rem}
+#details{background:var(--surface);border-bottom:1px solid #2a2a2a;padding:8px 0 16px}
+.it{display:flex;gap:12px;align-items:center;padding:10px 0}
+.it .im{position:relative;width:60px;height:60px;border:1px solid var(--line);border-radius:8px;background:#1b1b1b;flex:none}
+.it .im img{width:100%;height:100%;object-fit:cover;border-radius:7px}
+.it .im b{position:absolute;top:-8px;right:-8px;min-width:22px;height:22px;border-radius:11px;background:#d9d9d9;color:#000;font-size:.75rem;display:grid;place-items:center;padding:0 5px}
+.it .nm{flex:1;min-width:0}.it .nm small{display:block;color:var(--mute)}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:6px;margin-top:6px}
+.qty button{background:none;border:0;width:30px;height:28px;cursor:pointer;font-size:1.1rem}.qty span{min-width:24px;text-align:center;font-size:.9rem}
+.lines{border-top:1px solid #2a2a2a;margin-top:8px;padding-top:10px;font-size:.95rem}
+.lines div{display:flex;justify-content:space-between;padding:3px 0}.lines .g{color:var(--ok)}.lines .t{font-weight:700;font-size:1.1rem;border-top:1px solid #2a2a2a;margin-top:6px;padding-top:9px}
+/* etapas */
+.stepper{list-style:none;display:flex;justify-content:space-between;margin:26px 0 8px;padding:0;position:relative}
+.stepper:before{content:"";position:absolute;left:16%;right:16%;top:21px;height:1px;background:var(--line)}
+.stepper li{flex:1;text-align:center;position:relative;color:var(--mute);font-size:1rem}
+.stepper .dot{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);display:grid;place-items:center;margin:0 auto 10px;position:relative}
+.stepper .dot svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stepper li.done{color:var(--mute)}.stepper li.done .dot{border-color:#7a7a7a}.stepper li.done button{cursor:pointer}
+.stepper li.cur{color:var(--tx)}.stepper li.cur .dot{border-color:var(--tx);border-width:2px}
+.stepper button{background:none;border:0;padding:0;color:inherit;width:100%}
+h2.sec{font-size:1.55rem;font-weight:500;margin:38px 0 16px}
+h3.sub{font-size:1.05rem;font-weight:500;margin:22px 0 10px;color:var(--mute)}
+/* campos */
+.f{position:relative;border:1.5px solid var(--line-hi);border-radius:5px;background:transparent;margin-bottom:14px;min-height:60px;transition:border-color .15s}
+.f:focus-within{border-color:#fff;box-shadow:0 0 0 1px #fff}
+.f label{position:absolute;left:14px;top:18px;font-size:1rem;color:var(--mute);pointer-events:none;transition:all .12s;margin:0}
+.f input,.f textarea,.f select{display:block;width:100%;background:transparent;border:0;outline:0;color:var(--tx);font:inherit;font-size:1.1rem;padding:25px 14px 7px;border-radius:5px;-webkit-appearance:none;appearance:none}
+.f select{padding-right:34px}.f select option{background:#111;color:#fff}
+.f textarea{min-height:92px;resize:vertical;padding-top:28px}
+.f input::placeholder,.f textarea::placeholder{color:transparent}
+.f input:focus+label,.f input:not(:placeholder-shown)+label,.f textarea:focus+label,.f textarea:not(:placeholder-shown)+label,.f.has label{top:8px;font-size:.78rem}
+.f .side{position:absolute;right:14px;top:0;bottom:0;display:flex;align-items:center;gap:8px;color:var(--mute)}
+.f .side input{width:auto}
+.f.err{border-color:var(--err)}.f.err:focus-within{box-shadow:0 0 0 1px var(--err)}
+.f input[readonly]{color:#d2d2d2}
+.em{color:var(--err);font-size:.85rem;margin:-8px 2px 14px}
+.chk{display:flex;align-items:center;gap:12px;color:var(--mute);margin:6px 0 4px;cursor:pointer;font-size:1rem}
+.chk input{position:absolute;opacity:0;width:0;height:0}
+.chk .bx{width:30px;height:30px;border:2px solid var(--line-hi);border-radius:6px;flex:none;display:grid;place-items:center;background:transparent}
+.chk .bx svg{width:20px;height:20px;stroke:#000;stroke-width:3;fill:none;opacity:0}
+.chk input:checked+.bx{background:#fff}.chk input:checked+.bx svg{opacity:1}
+.chk input:focus-visible+.bx{outline:2px solid #fff;outline-offset:2px}
+.chk.inl{margin:0;font-size:.95rem;gap:8px}.chk.inl .bx{width:22px;height:22px;border-radius:4px;border-width:1.5px}.chk.inl .bx svg{width:14px;height:14px}
+/* opções de entrega e pagamento */
+.opts{display:flex;flex-direction:column;gap:12px}
+.opt{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border-radius:4px;padding:16px;cursor:pointer;position:relative}
+.opt input{position:absolute;opacity:0;width:0;height:0}
+.opt .rb{width:28px;height:28px;border:2px solid var(--line-hi);border-radius:6px;flex:none;display:grid;place-items:center;margin-top:1px}
+.opt .rb i{width:12px;height:12px;border-radius:2px;background:#fff;transform:scale(0);transition:transform .12s}
+.opt input:checked+.rb i{transform:scale(1)}
+.opt input:focus-visible+.rb{outline:2px solid #fff;outline-offset:2px}
+.opt .bd{flex:1;min-width:0}.opt .tt{display:flex;justify-content:space-between;gap:14px}.opt .tt b{font-weight:500;font-size:1.02rem}.opt .tt span{white-space:nowrap}
+.opt .eta,.opt .dt{color:var(--mute);margin-top:6px;font-size:.98rem}
+.opt:has(input:checked){background:#141414;outline:1px solid #3a3a3a}
+.more{display:block;margin:14px auto 0;background:none;border:0;font-size:1.1rem;cursor:pointer}
+.more .chev{display:inline-block;margin-left:6px;transition:transform .2s}.more[aria-expanded=true] .chev{transform:rotate(180deg)}
+.pickhd{color:var(--mute);margin:10px 0 0;font-size:1rem}
+.hint{color:var(--mute);font-size:.92rem;margin:-6px 2px 14px}
+.addr{display:flex;gap:16px;border:1.5px solid var(--line-hi);border-radius:5px;padding:20px 16px;margin-bottom:14px;position:relative}
+.addr svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:1.7;flex:none;margin-top:2px}
+.addr div{flex:1;font-size:1.1rem;line-height:1.7}.addr .alt{position:absolute;right:16px;top:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.help{display:inline-grid;place-items:center;width:34px;height:34px;border:1.5px solid var(--line-hi);border-radius:50%;background:none;cursor:pointer;font-size:1rem}
+.titrow{display:flex;justify-content:space-between;align-items:center}
+.tip{background:var(--surface);border-radius:6px;padding:12px 14px;color:#cfcfcf;font-size:.92rem;margin:-4px 0 14px}
+.btn{display:block;width:100%;background:#fff;color:#000;border:0;border-radius:5px;min-height:62px;font-size:1.15rem;font-weight:500;cursor:pointer;margin:22px 0 0}
+.btn:hover{background:#e9e9e9}.btn:disabled{opacity:.55;cursor:wait}
+.btn.ghost{background:transparent;color:#fff;border:1.5px solid var(--line-hi);min-height:54px}
+.couponbox{border:1.5px solid var(--line);border-radius:4px;margin-top:8px}
+.couponbox>.link{display:block;width:100%;text-align:center;padding:18px;letter-spacing:.04em;font-size:1.05rem}
+.couponrow{display:flex;gap:10px;padding:0 14px 14px}.couponrow .f{flex:1;margin:0}.couponrow .btn{width:auto;margin:0;padding:0 22px;min-height:60px;font-size:1rem}
+.cmsg{padding:0 16px 14px;font-size:.9rem;min-height:0}.cmsg.ok{color:var(--ok)}.cmsg.err{color:var(--err)}
+.cmsg .link{font-size:.85rem;margin-left:8px;color:var(--mute)}
+.recap{background:var(--surface);border-radius:6px;padding:4px 16px;margin-bottom:6px}
+.recap .rw{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;padding:14px 0;border-bottom:1px solid #262626}.recap .rw:last-child{border:0}
+.recap .rw small{display:block;color:var(--mute);margin-bottom:2px}.recap .rw div{min-width:0;overflow-wrap:anywhere}
+.pm .opt .tt{display:block}.pm .opt small{display:block;color:var(--mute);margin-top:4px;font-size:.9rem}
+#cardPanel{margin-top:14px;padding:16px;border:1px solid #2c2c2c;border-radius:6px;background:var(--surface)}
+.mp{position:relative;border:1.5px solid var(--line-hi);border-radius:5px;height:60px;padding:0 14px;display:flex;align-items:center;margin-bottom:14px;overflow:hidden}
+.mp iframe{height:44px!important}
+.ct{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.cardinfo{min-height:1.2em;margin:-6px 2px 12px;font-size:.88rem;color:var(--mute)}.cardinfo.err{color:var(--err)}
+.secure{font-size:.82rem;color:var(--mute);margin-top:4px}
+.notice{padding:12px 14px;background:#1a1405;border:1px solid #4a3a10;border-radius:6px;color:#f1d48a;font-size:.92rem;margin-top:18px}
+.errbox{padding:14px;margin-top:16px;border:1px solid #5a2623;background:#2a1110;color:#ffb3ad;border-radius:6px;display:none}
+/* pagamento gerado */
+#payment{margin:30px 0 40px;text-align:center}
+#payment .status{font-size:1.35rem;font-weight:600;margin:8px 0}
+#payment .sm{color:var(--mute);font-size:.92rem}
+#payment img#qr{width:250px;max-width:100%;margin:16px auto;background:#fff;padding:10px;border-radius:8px;display:block}
+#pixCode{width:100%;min-height:96px;background:var(--surface);color:#ddd;border:1px solid var(--line);border-radius:6px;padding:10px;word-break:break-all;font:inherit;font-size:.85rem;resize:none}
+.msg{display:none;padding:14px;margin-top:16px;border-radius:6px;text-align:left}
+.msg.success{background:#0f2a1a;border:1px solid #1d5a38;color:#9af0c0}.msg.note{background:var(--surface);border:1px solid var(--line)}.msg.fail{background:#2a1110;border:1px solid #5a2623;color:#ffb3ad}
+.tds{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px}
+.tds-box{background:#fff;color:#000;width:100%;max-width:480px;height:min(640px,92vh);display:flex;flex-direction:column;border-radius:8px;overflow:hidden}
+.tds-head{padding:12px 16px;font-weight:600;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tds-head button{background:#000;color:#fff;border:0;padding:6px 12px;border-radius:4px;cursor:pointer}
+.tds iframe{flex:1;border:0;width:100%}
+#loading{padding:60px 0;text-align:center;color:var(--mute)}
+@media(min-width:700px){.wrap,.brand{max-width:600px}}
+</style>
+</head>
+<body>
+<div class="brand"><a href="/"><img src="assets/logo.png" alt="Tênis Head"></a><a class="back" href="catalogo.html">← Catálogo</a></div>
+
+<div class="sumbar">
+  <div class="wrap">
+    <button type="button" class="link" id="sumToggle" aria-expanded="false" aria-controls="details"><span class="chev">⌄</span>Ver detalhes do pedido</button>
+    <span id="topTotal">R$ 0,00</span>
+  </div>
+</div>
+<div id="details" class="hidden"><div class="wrap">
+  <div id="detailsItems"></div>
+  <div class="lines">
+    <div><span>Subtotal</span><span id="lnSub"></span></div>
+    <div class="g hidden" id="lnCouponRow"><span>Cupom <b id="lnCode"></b></span><span id="lnDisc"></span></div>
+    <div><span>Entrega</span><span id="lnShip">—</span></div>
+    <div class="hidden" id="lnFeeRow"><span id="lnFeeLabel">Acréscimo do parcelamento</span><span id="lnFee"></span></div>
+    <div class="t"><span>Total</span><span id="lnTotal"></span></div>
+  </div>
+</div></div>
+
+<main class="wrap">
+<div id="loading">Carregando…</div>
+<div id="app" class="hidden">
+
+  <ol class="stepper" id="stepper">
+    <li class="done" id="st1"><div class="dot"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><a href="catalogo.html" style="text-decoration:none">Carrinho</a></li>
+    <li class="cur" id="st2"><button type="button"><div class="dot"><svg viewBox="0 0 24 24"><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7M7 18.5a1.5 1.5 0 100-.01M17 18.5a1.5 1.5 0 100-.01"/></svg></div>Entrega</button></li>
+    <li id="st3"><div class="dot"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10.5h18"/></svg></div>Pagamento</li>
+  </ol>
+
+  <div id="siteNotice" class="notice hidden"></div>
+
+  <!-- ===================== ETAPA 2: ENTREGA ===================== -->
+  <form id="formDelivery" class="step" novalidate autocomplete="on">
+    <div class="couponbox" id="couponBox">
+      <button type="button" class="link" id="couponOpen">Adicionar cupom de desconto</button>
+      <div id="couponPanel" class="hidden">
+        <div class="couponrow">
+          <div class="f"><input id="coupon" maxlength="32" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder=" "><label for="coupon">Cupom</label></div>
+          <button type="button" class="btn" id="applyCoupon">Aplicar</button>
+        </div>
+        <div id="couponMsg" class="cmsg" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <h2 class="sec">Dados de contato</h2>
+    <div class="f" id="fEmail"><input id="email" type="email" inputmode="email" autocomplete="email" placeholder=" " required><label for="email">E-mail</label><span class="side hidden" id="emailAlt"><button type="button" class="link sm" id="emailChange">Alterar</button></span></div>
+    <div class="em hidden" id="eEmail"></div>
+    <label class="chk"><input type="checkbox" id="offers" checked><span class="bx"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Receber ofertas e novidades por e-mail</label>
+
+    <h2 class="sec">Entrega</h2>
+    <div class="f" id="fCep"><input id="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder=" "><label for="cep">CEP</label><span class="side"><a class="link sm" href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noopener">Não sei meu CEP</a></span></div>
+    <div class="em hidden" id="eCep"></div>
+    <div id="shipInfo" class="hint">Digite o CEP para ver as opções de entrega.</div>
+    <div id="shipBox" class="hidden">
+      <div class="opts" id="shipMain"></div>
+      <button type="button" class="more hidden" id="shipMore" aria-expanded="false">Mais opções <span class="chev">⌄</span></button>
+      <div class="opts hidden" id="shipRest" style="margin-top:12px"></div>
+    </div>
+    <div class="em hidden" id="eShip"></div>
+
+    <h2 class="sec">Dados para entrega</h2>
+    <div class="f" id="fNome"><input id="nome" autocomplete="given-name" placeholder=" " required><label for="nome">Nome</label></div>
+    <div class="em hidden" id="eNome"></div>
+    <div class="f" id="fSobre"><input id="sobrenome" autocomplete="family-name" placeholder=" " required><label for="sobrenome">Sobrenome</label></div>
+    <div class="em hidden" id="eSobre"></div>
+    <div class="f" id="fTel"><input id="telefone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder=" " required><label for="telefone">Telefone com DDD</label></div>
+    <div class="em hidden" id="eTel"></div>
+
+    <div id="addrBlock" class="hidden">
+      <div class="addr" id="addrCard"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.6 7-11a7 7 0 10-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><div id="adStreet"></div><div><b id="adCep"></b> <span id="adBairro"></span></div><div id="adCity"></div></div><button type="button" class="link sm alt" id="addrChange">Alterar</button></div>
+      <div id="manualAddr" class="hidden">
+        <div class="hint" id="manualHint">Não encontramos a rua automaticamente. Preencha o endereço.</div>
+        <div class="f" id="fRua"><input id="rua" autocomplete="address-line1" placeholder=" "><label for="rua">Rua / Avenida</label></div>
+        <div class="f" id="fBairro"><input id="bairro" placeholder=" "><label for="bairro">Bairro</label></div>
+        <div class="row2">
+          <div class="f" id="fCidade"><input id="cidade" autocomplete="address-level2" placeholder=" "><label for="cidade">Cidade</label></div>
+          <div class="f" id="fUf"><select id="uf" autocomplete="address-level1"><option value=""></option></select><label for="uf">Estado</label></div>
+        </div>
+      </div>
+      <div class="em hidden" id="eRua"></div>
+      <div class="f" id="fNum"><input id="numero" inputmode="numeric" autocomplete="off" placeholder=" "><label for="numero">Número</label><span class="side"><label class="chk inl" style="position:static;margin:0"><input type="checkbox" id="semNumero"><span class="bx"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Sem número</label></span></div>
+      <div class="em hidden" id="eNum"></div>
+      <div class="f"><input id="complemento" autocomplete="address-line2" maxlength="80" placeholder=" "><label for="complemento">Apto, Bloco, Referência, etc. (opcional)</label></div>
+    </div>
+
+    <div class="titrow" style="margin-top:38px"><h2 class="sec" style="margin:0">Dados para nota fiscal</h2><button type="button" class="help" id="nfHelp" aria-label="Ajuda">?</button></div>
+    <div id="nfTip" class="tip hidden" style="margin-top:14px">Informe o CPF (pessoa física) ou o CNPJ (empresa) que deve constar na nota fiscal. Os mesmos dados são usados para confirmar o pagamento.</div>
+    <div class="f" style="margin-top:16px" id="fDoc"><input id="doc" inputmode="numeric" autocomplete="off" maxlength="18" placeholder=" " required><label for="doc">CPF ou CNPJ</label></div>
+    <div class="em hidden" id="eDoc"></div>
+    <label class="chk" style="margin-bottom:14px"><input type="checkbox" id="nfSame" checked><span class="bx"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Usar as mesmas informações da entrega</label>
+    <div id="nfOther" class="hidden">
+      <div class="f" id="fNfNome"><input id="nfNome" maxlength="100" placeholder=" "><label for="nfNome">Nome ou razão social na nota</label></div>
+      <div class="em hidden" id="eNfNome"></div>
+    </div>
+    <div class="f"><textarea id="obs" maxlength="500" placeholder=" "></textarea><label for="obs">Recado ou observação (opcional)</label></div>
+
+    <div id="singleVariant" class="hidden">
+      <div class="row2">
+        <div class="f"><input id="size" maxlength="20" placeholder=" "><label for="size">Tamanho</label></div>
+        <div class="f"><input id="color" maxlength="30" placeholder=" "><label for="color">Cor</label></div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn" id="toPay">Continuar para pagamento</button>
+  </form>
+
+  <!-- ===================== ETAPA 3: PAGAMENTO ===================== -->
+  <form id="formPay" class="step hidden" novalidate>
+    <h2 class="sec">Confira seus dados</h2>
+    <div class="recap">
+      <div class="rw"><div><small>Contato</small><span id="rcEmail"></span></div><button type="button" class="link sm" data-back>Alterar</button></div>
+      <div class="rw"><div><small id="rcShipTitle">Entrega</small><span id="rcShip"></span></div><button type="button" class="link sm" data-back>Alterar</button></div>
+    </div>
+
+    <fieldset class="pm" id="payMethods" style="border:0;padding:0;margin:0">
+      <h2 class="sec">Forma de pagamento</h2>
+      <div class="opts">
+        <label class="opt"><input type="radio" name="pm" value="pix" checked><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>Pix</b></span><small>Aprovação na hora, sem acréscimo</small></span></label>
+        <label class="opt hidden" id="pmCardOpt"><input type="radio" name="pm" value="card"><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>Cartão</b></span><small id="pmCardHint">Crédito ou débito</small></span></label>
+      </div>
+      <div id="cardPanel" class="hidden">
+        <div class="ct" id="ctGrid">
+          <label class="opt" id="ctCreditOpt"><input type="radio" name="ct" value="credit_card" checked><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>Crédito</b></span></span></label>
+          <label class="opt" id="ctDebitOpt"><input type="radio" name="ct" value="debit_card"><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>Débito</b></span></span></label>
+        </div>
+        <div class="mp" id="cardNumber"></div>
+        <div class="row2"><div class="mp" id="cardExp"></div><div class="mp" id="cardCvv"></div></div>
+        <div id="cardInfo" class="cardinfo" aria-live="polite"></div>
+        <div class="f"><input id="cardName" autocomplete="cc-name" maxlength="60" placeholder=" "><label for="cardName">Nome impresso no cartão</label></div>
+        <div class="f" id="installmentsWrap"><select id="installments"></select><label for="installments" style="top:8px;font-size:.78rem">Parcelas</label></div>
+        <div class="secure">🔒 Os dados do cartão vão direto para o Mercado Pago. A loja não guarda número nem código de segurança.</div>
+      </div>
+    </fieldset>
+    <button type="submit" class="btn" id="pay">GERAR PAGAMENTO PIX</button>
+    <button type="button" class="btn ghost" data-back>Voltar para entrega</button>
+    <div id="error" class="errbox" role="alert"></div>
+  </form>
+
+  <!-- ===================== PAGAMENTO GERADO ===================== -->
+  <section id="payment" class="hidden" aria-live="polite">
+    <div id="paymentStatus" class="status">Aguardando pagamento…</div>
+    <div id="orderSummary" class="sm" style="margin:6px 0 14px"></div>
+    <div id="pixArea">
+      <p>Escaneie o QR Code ou use o Pix Copia e Cola.</p>
+      <img id="qr" alt="QR Code Pix">
+      <div id="expiry" class="sm"></div>
+      <textarea id="pixCode" readonly></textarea>
+      <button id="copy" type="button" class="btn">COPIAR PIX</button>
+    </div>
+    <div id="paid" class="msg success">Pagamento confirmado! Seu pedido está garantido. ❤️</div>
+    <div id="note" class="msg note"></div>
+    <div id="failed" class="msg fail"></div>
+    <button type="button" id="retry" class="btn hidden">GERAR UM NOVO PIX</button>
+    <p class="sm" style="margin-top:18px">Pedido <span id="orderRef"></span> — guarde esta página para consultar o status depois.</p>
+  </section>
+</div>
+</main>
+
+<script src="js/mock-api.js"></script>
+<script src="js/shop.js"></script>
+<script src="js/shipping-rules.js"></script>
+<script src="js/site-settings.js"></script>
+<script>
+(function(){
+'use strict';
+const qs=new URLSearchParams(location.search), slug=qs.get('produto')||qs.get('slug');
+const cartMode=qs.get('modo')==='carrinho';
+const resumeId=qs.get('pedido');
+const $=id=>document.getElementById(id);
+const SR=window.ShippingRules;
+const money=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const digitsOf=v=>String(v||'').replace(/\D/g,'');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let product=null, order=null, timer=null, expiryTimer=null, siteCfg=null;
+const UF_NAMES={AC:'Acre',AL:'Alagoas',AP:'Amapá',AM:'Amazonas',BA:'Bahia',CE:'Ceará',DF:'Distrito Federal',ES:'Espírito Santo',GO:'Goiás',MA:'Maranhão',MT:'Mato Grosso',MS:'Mato Grosso do Sul',MG:'Minas Gerais',PA:'Pará',PB:'Paraíba',PR:'Paraná',PE:'Pernambuco',PI:'Piauí',RJ:'Rio de Janeiro',RN:'Rio Grande do Norte',RS:'Rio Grande do Sul',RO:'Rondônia',RR:'Roraima',SC:'Santa Catarina',SP:'São Paulo',SE:'Sergipe',TO:'Tocantins'};
+$('uf').innerHTML='<option value=""></option>'+Object.keys(UF_NAMES).map(u=>'<option value="'+u+'">'+UF_NAMES[u]+'</option>').join('');
+
+/* ---------- token por tentativa (evita cobrança duplicada) ---------- */
+const TOKEN_KEY='tenishead-checkout-token';
+function checkoutToken(){let t=sessionStorage.getItem(TOKEN_KEY);if(!t){t=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():(Date.now().toString(16)+Math.random().toString(16).slice(2)+Math.random().toString(16).slice(2));sessionStorage.setItem(TOKEN_KEY,t)}return t}
+function resetToken(){sessionStorage.removeItem(TOKEN_KEY)}
+
+/* ---------- dados salvos neste aparelho (sem CPF e sem cartão) ---------- */
+const SAVE_KEY='tenishead-checkout-data';
+function loadSaved(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{}}catch(e){return {}}}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({email:$('email').value,nome:$('nome').value,sobrenome:$('sobrenome').value,telefone:$('telefone').value,cep:$('cep').value,numero:$('numero').value,semNumero:$('semNumero').checked,complemento:$('complemento').value,offers:$('offers').checked}))}catch(e){}}
+
+/* ---------- máscaras e validações ---------- */
+function maskCep(v){const d=digitsOf(v).slice(0,8);return d.length>5?d.slice(0,5)+'-'+d.slice(5):d}
+function maskPhone(v){let d=digitsOf(v);if(d.startsWith('55')&&d.length>11)d=d.slice(2);d=d.slice(0,11);
+  if(d.length>6)return '('+d.slice(0,2)+') '+d.slice(2,d.length-4)+'-'+d.slice(-4);
+  if(d.length>2)return '('+d.slice(0,2)+') '+d.slice(2);return d}
+function maskDoc(v){const d=digitsOf(v).slice(0,14);
+  if(d.length<=11)return d.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1-$2');
+  return d.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2')}
+function validCpf(c){c=digitsOf(c);if(!/^\d{11}$/.test(c)||/^(\d)\1+$/.test(c))return false;
+  let s=0;for(let i=0;i<9;i++)s+=+c[i]*(10-i);let d1=(s*10)%11;if(d1===10)d1=0;if(d1!==+c[9])return false;
+  s=0;for(let i=0;i<10;i++)s+=+c[i]*(11-i);let d2=(s*10)%11;if(d2===10)d2=0;return d2===+c[10]}
+function validCnpj(c){c=digitsOf(c);if(!/^\d{14}$/.test(c)||/^(\d)\1+$/.test(c))return false;
+  const calc=len=>{let s=0,p=len-7;for(let i=len;i>=1;i--){s+=+c[len-i]*p--;if(p<2)p=9}const r=s%11;return r<2?0:11-r};
+  return calc(12)===+c[12]&&calc(13)===+c[13]}
+const validDoc=v=>{const d=digitsOf(v);return d.length===14?validCnpj(d):validCpf(d)};
+const validEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim());
+
+/* ---------- erros por campo ---------- */
+function setErr(fieldId,errId,msg){const f=$(fieldId),e=$(errId);if(f)f.classList.toggle('err',!!msg);if(e){e.textContent=msg||'';e.classList.toggle('hidden',!msg)}return !msg}
+
+/* ---------- itens, subtotal e cupom ---------- */
+let qty=1;
+const price=()=>Number(product.promo_price!=null?product.promo_price:product.price);
+function items(){
+  if(cartMode)return RSShop.getCart().map(it=>({name:it.name,image:it.image,quantity:it.quantity,unit:Number(it.price),size:it.size,color:it.color}));
+  return product?[{name:product.name,image:product.images&&product.images[0],quantity:qty,unit:price(),size:$('size').value,color:$('color').value}]:[];
+}
+function subtotalCents(){return items().reduce((s,it)=>s+Math.round(it.unit*100)*it.quantity,0)}
+function currentItems(){
+  if(cartMode)return RSShop.getCart().map(it=>({productId:it.productId,quantity:it.quantity}));
+  return product?[{productId:product.id,quantity:qty}]:[];
+}
+const COUPON_RE=/[^A-Z0-9]/g;
+function cleanCoupon(v){return String(v||'').toUpperCase().replace(COUPON_RE,'').slice(0,32)}
+let couponState=null, couponTimer=null;
+function discCents(){return couponState?Math.round(couponState.discount*100):0}
+function productsCents(){return Math.max(0,subtotalCents()-discCents())}
+function setCouponMsg(text,kind){const m=$('couponMsg');m.className='cmsg'+(kind?' '+kind:'');m.textContent=text||'';
+  if(kind==='ok'){const b=document.createElement('button');b.type='button';b.className='link';b.textContent='remover';b.addEventListener('click',removeCoupon);m.appendChild(b)}}
+function removeCoupon(){couponState=null;$('coupon').value='';setCouponMsg('');onTotalsChanged()}
+async function applyCoupon(opts){
+  opts=opts||{};
+  const code=cleanCoupon($('coupon').value);$('coupon').value=code;
+  if(!code){removeCoupon();return true}
+  const its=currentItems();if(!its.length)return false;
+  $('applyCoupon').disabled=true;if(!opts.silent)setCouponMsg('Verificando cupom…');
+  try{
+    const r=await fetch('/api/coupons/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,items:its,cpf:$('doc').value,email:$('email').value})});
+    const d=await r.json();
+    if(!r.ok||!d.valid){couponState=null;onTotalsChanged();setCouponMsg(d.error||'Cupom inválido.','err');return false}
+    couponState={code:d.coupon.code,subtotal:d.subtotal,discount:d.discount,total:d.total};
+    onTotalsChanged();
+    setCouponMsg('Cupom '+d.coupon.code+' aplicado: você economiza '+money(d.discount)+(d.clamped?' (desconto limitado ao mínimo do Pix)':''),'ok');
+    return true;
+  }catch(e){setCouponMsg('Não deu pra verificar o cupom agora. Tente de novo.','err');return false}
+  finally{$('applyCoupon').disabled=false}
+}
+function recheckCoupon(){if(!couponState)return;clearTimeout(couponTimer);couponTimer=setTimeout(()=>applyCoupon({silent:true}),400)}
+$('couponOpen').addEventListener('click',()=>{$('couponOpen').classList.add('hidden');$('couponPanel').classList.remove('hidden');$('coupon').focus()});
+$('applyCoupon').addEventListener('click',()=>applyCoupon());
+$('coupon').addEventListener('input',()=>{const c=cleanCoupon($('coupon').value);if($('coupon').value!==c)$('coupon').value=c;if(couponState&&couponState.code!==c){couponState=null;onTotalsChanged();setCouponMsg('')}});
+$('coupon').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();applyCoupon()}});
+$('doc').addEventListener('blur',recheckCoupon);$('email').addEventListener('blur',recheckCoupon);
+
+/* ---------- entrega: CEP -> endereço -> opções ---------- */
+let addr=null;          // {cep,street,neighborhood,city,state}
+let shipOptions=[], shipId=null, shipExpanded=false, cepSeq=0;
+const WEEK=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+const dd=n=>String(n).padStart(2,'0');
+const fmtDay=d=>WEEK[d.getDay()]+' '+dd(d.getDate())+'/'+dd(d.getMonth()+1);
+function nextBiz(d){d=new Date(d);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);return d}
+function addBiz(d,n){d=new Date(d);while(n>0){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6)n--}return d}
+function etaText(o){
+  if(o.kind==='pickup')return '';
+  const now=new Date();let start=nextBiz(now);
+  if(o.sameDayCutoff&&now.getHours()>=o.sameDayCutoff&&start.toDateString()===now.toDateString())start=addBiz(now,1);
+  if(o.kind==='correios'){const e=addBiz(now,o.maxDays);return 'Chega '+fmtDay(e)}
+  const a=addBiz(start,0),b=addBiz(start,Math.max(1,o.maxDays-o.minDays));
+  return 'Chega entre '+fmtDay(a)+' e '+fmtDay(b);
+}
+function curShip(){return shipOptions.find(o=>o.id===shipId)||null}
+function shipCents(){const o=curShip();return o?o.priceCents:0}
+async function lookupCep(cep){
+  async function get(url,map){
+    const c=new AbortController(),t=setTimeout(()=>c.abort(),6500);
+    try{
+      const r=await fetch(url,{signal:c.signal,headers:{Accept:'application/json'}});
+      const ct=r.headers.get('content-type')||'';
+      if(r.status===404)return {nf:true};
+      if(!r.ok||ct.indexOf('json')<0)return {fail:true};
+      return {data:map(await r.json())};
+    }catch(e){return {fail:true}}finally{clearTimeout(t)}
+  }
+  let nf=false;
+  let r=await get('/api/cep/'+cep,d=>d&&d.city?d:null);          // servidor da loja
+  if(r.data)return r.data;if(r.nf)nf=true;
+  r=await get('https://viacep.com.br/ws/'+cep+'/json/',d=>d.erro?null:{street:d.logradouro||'',neighborhood:d.bairro||'',city:d.localidade||'',state:d.uf||''});
+  if(r.data)return r.data;if(!r.fail)nf=true;
+  r=await get('https://brasilapi.com.br/api/cep/v2/'+cep,d=>d&&d.city?{street:d.street||'',neighborhood:d.neighborhood||'',city:d.city,state:d.state||''}:null);
+  if(r.data)return r.data;if(!r.fail)nf=true;
+  return nf?{notFound:true}:{network:true};
+}
+function showAddr(){
+  const has=!!addr;
+  const pick=curShip()&&!curShip().requiresAddress;
+  $('addrBlock').classList.toggle('hidden',!has||pick);
+  if(!has)return;
+  const manual=!addr.street;
+  $('addrCard').classList.toggle('hidden',manual);
+  $('manualAddr').classList.toggle('hidden',!manual&&!addr.__edit);
+  if(!manual){
+    $('adStreet').textContent=addr.street;
+    $('adCep').textContent='CEP '+digitsOf(addr.cep);
+    $('adBairro').textContent=(addr.neighborhood?'- '+addr.neighborhood:'');
+    $('adCity').textContent=addr.city+' - '+(UF_NAMES[addr.state]||addr.state);
+  }
+  $('rua').value=addr.street||'';$('bairro').value=addr.neighborhood||'';$('cidade').value=addr.city||'';$('uf').value=addr.state||'';
+  [ 'rua','bairro','cidade' ].forEach(i=>$(i).parentNode.classList.toggle('has',!!$(i).value));
+}
+function renderShipping(){
+  const box=$('shipBox'),main=$('shipMain'),rest=$('shipRest'),more=$('shipMore');
+  if(!shipOptions.length){box.classList.add('hidden');return}
+  box.classList.remove('hidden');
+  const optHtml=o=>'<label class="opt"><input type="radio" name="ship" value="'+o.id+'"'+(o.id===shipId?' checked':'')+'><span class="rb"><i></i></span><span class="bd"><span class="tt"><b>'+esc(o.label)+'</b><span>'+(o.priceCents>0?money(o.priceCents/100):(o.id==='uber99'?'':'Grátis'))+'</span></span>'
+    +(o.detail?'<div class="dt">'+esc(o.detail)+'</div>':'')+(etaText(o)?'<div class="eta">'+esc(etaText(o))+'</div>':'')+'</span></label>';
+  const nonPick=shipOptions.filter(o=>o.kind!=='pickup'),pick=shipOptions.filter(o=>o.kind==='pickup');
+  const first=nonPick[0]||pick[0];
+  let shown=[first];const sel=curShip();
+  if(sel&&sel!==first)shipExpanded=true;
+  const restOpts=shipOptions.filter(o=>o!==first);
+  main.innerHTML=optHtml(first);
+  rest.innerHTML=restOpts.filter(o=>o.kind!=='pickup').map(optHtml).join('')+(pick.length&&pick[0]!==first?'<div class="pickhd">Retirar em</div>'+pick.map(optHtml).join(''):'');
+  more.classList.toggle('hidden',!restOpts.length);
+  rest.classList.toggle('hidden',!(shipExpanded&&restOpts.length));
+  more.setAttribute('aria-expanded',shipExpanded?'true':'false');
+  box.querySelectorAll('input[name=ship]').forEach(r=>r.addEventListener('change',()=>{shipId=r.value;setErr(null,'eShip','');showAddr();onTotalsChanged()}));
+}
+$('shipMore').addEventListener('click',()=>{shipExpanded=!shipExpanded;renderShipping()});
+function refreshShipping(){
+  if(!addr){shipOptions=[];shipId=null;renderShipping();showAddr();return}   // opções só depois que o endereço foi encontrado
+  const cep=digitsOf(addr.cep);
+  shipOptions=SR.options(cep,productsCents());
+  if(!shipOptions.some(o=>o.id===shipId))shipId=shipOptions.length?shipOptions[0].id:null;
+  renderShipping();showAddr();
+}
+async function onCepChange(){
+  const raw=digitsOf($('cep').value);
+  $('cep').value=maskCep(raw);
+  const mySeq=++cepSeq;
+  if(raw.length<8){addr=null;shipOptions=[];shipId=null;renderShipping();showAddr();$('shipInfo').textContent='Digite o CEP para ver as opções de entrega.';$('shipInfo').classList.remove('hidden');setErr('fCep','eCep','');onTotalsChanged();return}
+  if(!SR.validCep(raw)){setErr('fCep','eCep','CEP inválido.');return}
+  setErr('fCep','eCep','');
+  $('shipInfo').textContent='Buscando endereço…';$('shipInfo').classList.remove('hidden');
+  const r=await lookupCep(raw);
+  if(mySeq!==cepSeq)return;
+  if(r.notFound){addr=null;shipOptions=[];shipId=null;renderShipping();showAddr();$('shipInfo').classList.add('hidden');setErr('fCep','eCep','CEP não encontrado. Confira os números ou use "Não sei meu CEP".');onTotalsChanged();return}
+  if(r.network){
+    // sem internet para consultar: segue com preenchimento manual do endereço
+    addr={cep:raw,street:'',neighborhood:'',city:'',state:SR.ufFromCep(raw)||''};
+    $('manualHint').textContent='Não conseguimos buscar o endereço agora. Preencha manualmente.';
+  }else{addr={cep:raw,street:r.street||'',neighborhood:r.neighborhood||'',city:r.city||'',state:(r.state||'').toUpperCase()};
+    $('manualHint').textContent='Esse CEP não tem rua cadastrada (cidade pequena ou CEP geral). Preencha o endereço.'}
+  $('shipInfo').classList.add('hidden');
+  refreshShipping();onTotalsChanged();
+  if(addr.street&&!$('numero').value)$('numero').focus({preventScroll:false});
+}
+$('cep').addEventListener('input',onCepChange);
+$('addrChange').addEventListener('click',()=>{ $('cep').focus();$('cep').select();window.scrollTo({top:$('fCep').getBoundingClientRect().top+scrollY-120,behavior:'smooth'}) });
+['rua','bairro','cidade'].forEach(i=>$(i).addEventListener('input',()=>{if(addr){addr.street=$('rua').value;addr.neighborhood=$('bairro').value;addr.city=$('cidade').value;addr.__edit=true}}));
+$('uf').addEventListener('change',()=>{if(addr)addr.state=$('uf').value;$('uf').parentNode.classList.toggle('has',!!$('uf').value)});
+$('semNumero').addEventListener('change',()=>{const s=$('semNumero').checked;$('numero').disabled=s;if(s){$('numero').value='';setErr('fNum','eNum','')}$('numero').parentNode.style.opacity=s?.6:1});
+
+/* ---------- contato ---------- */
+$('emailChange').addEventListener('click',()=>{$('email').readOnly=false;$('emailAlt').classList.add('hidden');$('email').focus()});
+$('nfHelp').addEventListener('click',()=>$('nfTip').classList.toggle('hidden'));
+$('nfSame').addEventListener('change',()=>$('nfOther').classList.toggle('hidden',$('nfSame').checked));
+$('telefone').addEventListener('input',()=>{$('telefone').value=maskPhone($('telefone').value)});
+$('doc').addEventListener('input',()=>{$('doc').value=maskDoc($('doc').value)});
+$('numero').addEventListener('input',()=>{$('numero').value=$('numero').value.replace(/[^0-9A-Za-z\- ]/g,'').slice(0,10)});
+
+/* ---------- totais ---------- */
+// Tudo que entra na cobrança (produtos com cupom + entrega) é a base do cartão; o servidor refaz a conta.
+let payCfg=null, mpInst=null, mpFields=null, cardList=[], cardPm=null;
+function method(){const r=document.querySelector('input[name=pm]:checked');return r?r.value:'pix'}
+function cardType(){const r=document.querySelector('input[name=ct]:checked');return r?r.value:'credit_card'}
+function cardOk(){return !!(payCfg&&payCfg.card&&payCfg.card.available)}
+function baseCents(){return productsCents()+shipCents()}
+function rateFor(type,n){if(!cardOk())return 0;if(type==='debit_card')return Number(payCfg.card.debitFee)||0;return Number(payCfg.card.rates[n-1])||0}
+function quoteFor(base,type,n){const pct=rateFor(type,n),fee=Math.round(base*pct/100),total=base+fee;return {n,pct,feeCents:fee,totalCents:total,instCents:Math.round(total/n),type}}
+function creditOptions(base){const c=payCfg.card,minC=Math.round(Number(c.minInstallment||0)*100),max=Math.max(1,Math.min(12,Number(c.maxInstallments)||1)),out=[];
+  for(let n=1;n<=max;n++){const q=quoteFor(base,'credit_card',n);if(n>1&&q.totalCents/n<minC)break;out.push(q)}return out}
+function currentQuote(){
+  const base=baseCents();
+  if(method()!=='card'||!cardOk())return {base,feeCents:0,totalCents:base,n:null,pct:0,type:null};
+  const type=cardType(),n=type==='debit_card'?1:Math.max(1,Number($('installments').value)||1);
+  return Object.assign({base},quoteFor(base,type,n));
+}
+function renderInstallments(){
+  const wrap=$('installmentsWrap'),sel=$('installments');
+  if(!cardOk()||cardType()==='debit_card'){wrap.classList.add('hidden');return}
+  wrap.classList.remove('hidden');
+  const keep=Number(sel.value)||1,opts=creditOptions(baseCents());
+  sel.innerHTML=opts.map(q=>'<option value="'+q.n+'">'+q.n+'x de '+money(q.instCents/100)+(q.feeCents>0?' — total '+money(q.totalCents/100):' sem acréscimo')+'</option>').join('');
+  sel.value=String(opts.some(q=>q.n===keep)?keep:1);
+}
+function renderDetails(){
+  const its=items();
+  $('detailsItems').innerHTML=its.map((it,i)=>{
+    const meta=[it.size?'Tam. '+it.size:null,it.color||null].filter(Boolean).join(' · ');
+    const img=it.image?'<img src="'+esc(it.image)+'" alt="">':'';
+    const q=(!cartMode)?'<div class="qty"><button type="button" data-q="-1" aria-label="Menos">−</button><span>'+it.quantity+'</span><button type="button" data-q="1" aria-label="Mais">+</button></div>':'';
+    return '<div class="it"><div class="im">'+img+'<b>'+it.quantity+'</b></div><div class="nm">'+esc(it.name)+(meta?'<small>'+esc(meta)+'</small>':'')+q+'</div><div>'+money(it.unit*it.quantity)+'</div></div>';
+  }).join('');
+}
+$('detailsItems').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b||cartMode)return;
+  const max=(siteCfg&&siteCfg.checkout&&siteCfg.checkout.maxQuantity)||20;
+  qty=Math.max(1,Math.min(max,qty+Number(b.dataset.q)));recheckCoupon();onTotalsChanged()});
+function onTotalsChanged(){
+  refreshShipping();renderInstallments();renderDetails();
+  const q=currentQuote(),sub=subtotalCents();
+  $('lnSub').textContent=money(sub/100);
+  $('lnCouponRow').classList.toggle('hidden',!couponState);
+  if(couponState){$('lnCode').textContent=couponState.code;$('lnDisc').textContent='− '+money(couponState.discount)}
+  const o=curShip();
+  $('lnShip').textContent=!o?'—':(o.id==='uber99'?'A combinar':(o.priceCents>0?money(o.priceCents/100):'Grátis'));
+  $('lnFeeRow').classList.toggle('hidden',!(q.feeCents>0));
+  if(q.feeCents>0){$('lnFeeLabel').textContent=q.type==='debit_card'?'Taxa do débito':'Acréscimo do parcelamento ('+q.n+'x)';$('lnFee').textContent='+ '+money(q.feeCents/100)}
+  $('lnTotal').textContent=money(q.totalCents/100);
+  $('topTotal').textContent=money(q.totalCents/100);
+  if(!$('pay').dataset.busy)$('pay').textContent=method()==='card'?'PAGAR '+money(q.totalCents/100)+' NO CARTÃO':'GERAR PAGAMENTO PIX';
+}
+$('sumToggle').addEventListener('click',()=>{const open=$('details').classList.toggle('hidden');$('sumToggle').setAttribute('aria-expanded',open?'false':'true')});
+
+/* ---------- etapas ---------- */
+let step=2;
+function showStep(n,push){
+  step=n;
+  $('formDelivery').classList.toggle('hidden',n!==2);
+  $('formPay').classList.toggle('hidden',n!==3);
+  $('stepper').classList.remove('hidden');
+  $('st2').className=n===2?'cur':'done';$('st3').className=n===3?'cur':'';
+  $('st2').querySelector('button').style.cursor=n===3?'pointer':'default';
+  if(n===3){fillRecap();syncMethod()}
+  if(push)history.pushState({step:n},'','');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$('st2').querySelector('button').addEventListener('click',()=>{if(step===3)showStep(2,true)});
+document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click',()=>showStep(2,true)));
+window.addEventListener('popstate',()=>{if(!$('payment').classList.contains('hidden'))return;showStep(history.state&&history.state.step===3&&validateDelivery(true)?3:2,false)});
+function fullName(){return ($('nome').value.trim()+' '+$('sobrenome').value.trim()).trim()}
+function addressLine(){const a=addr||{};const num=$('semNumero').checked?'s/n':$('numero').value.trim();
+  return esc(a.street||'')+', '+esc(num)+($('complemento').value.trim()?' - '+esc($('complemento').value.trim()):'')+'<br>'+esc((a.neighborhood?a.neighborhood+' · ':'')+(a.city||'')+' - '+(a.state||''))+' · CEP '+esc(maskCep(a.cep||''))}
+function fillRecap(){
+  $('rcEmail').textContent=$('email').value;
+  const o=curShip();
+  $('rcShipTitle').textContent=o?o.label:'Entrega';
+  $('rcShip').innerHTML=(o&&!o.requiresAddress?esc(o.detail)+'<br>':(addr?addressLine()+'<br>':''))+esc(fullName())+' · '+esc($('telefone').value);
+}
+
+/* ---------- validação da etapa de entrega ---------- */
+function validateDelivery(silent){
+  const checks=[];
+  const o=curShip(),pick=o&&!o.requiresAddress;
+  checks.push([validEmail($('email').value),'fEmail','eEmail','Informe um e-mail válido.']);
+  if(!SR.validCep($('cep').value))checks.push([false,'fCep','eCep','Informe o CEP para ver as opções de entrega.']);
+  else if(!addr)checks.push([false,'fCep','eCep','Aguarde a busca do endereço ou confira o CEP.']);
+  else checks.push([true,'fCep','eCep','']);
+  checks.push([!!o,null,'eShip','Escolha uma forma de entrega.']);
+  checks.push([$('nome').value.trim().length>=2,'fNome','eNome','Informe o nome.']);
+  checks.push([$('sobrenome').value.trim().length>=1,'fSobre','eSobre','Informe o sobrenome.']);
+  const ph=digitsOf($('telefone').value);checks.push([ph.length===10||ph.length===11,'fTel','eTel','Informe o telefone com DDD.']);
+  if(!pick&&addr){
+    checks.push([($('rua').value||addr.street||'').trim().length>=2,'fRua','eRua','Informe a rua do endereço.']);
+    checks.push([($('cidade').value||addr.city||'').trim().length>=2&&!!(addr.state||$('uf').value),'fCidade','eRua','Informe cidade e estado.']);
+    checks.push([$('semNumero').checked||$('numero').value.trim().length>0,'fNum','eNum','Informe o número ou marque "Sem número".']);
+  }
+  checks.push([validDoc($('doc').value),'fDoc','eDoc',digitsOf($('doc').value).length>11?'CNPJ inválido.':'CPF ou CNPJ inválido.']);
+  if(!$('nfSame').checked)checks.push([$('nfNome').value.trim().length>=3,'fNfNome','eNfNome','Informe o nome ou razão social da nota.']);
+  let first=null,ok=true;
+  checks.forEach(c=>{if(c[0]){if(!silent&&c[3]!==undefined)setErr(c[1],c[2],'');return}ok=false;if(!silent){setErr(c[1],c[2],c[3]);if(!first)first=c[1]}});
+  if(!ok&&!silent&&first)$(first).scrollIntoView({behavior:'smooth',block:'center'});
+  return ok;
+}
+// limpa o erro ao digitar
+[['email','fEmail','eEmail'],['nome','fNome','eNome'],['sobrenome','fSobre','eSobre'],['telefone','fTel','eTel'],['doc','fDoc','eDoc'],['numero','fNum','eNum'],['rua','fRua','eRua'],['nfNome','fNfNome','eNfNome']]
+  .forEach(a=>$(a[0]).addEventListener('input',()=>setErr(a[1],a[2],'')));
+['email','nome','sobrenome','telefone','numero','complemento','cep'].forEach(i=>$(i).addEventListener('change',persist));$('offers').addEventListener('change',persist);$('semNumero').addEventListener('change',persist);
+
+$('formDelivery').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(cleanCoupon($('coupon').value)&&!couponState){const ok=await applyCoupon();if(!ok){$('couponOpen').classList.add('hidden');$('couponPanel').classList.remove('hidden');$('couponBox').scrollIntoView({behavior:'smooth',block:'center'});return}}
+  if(siteCfg&&siteCfg.checkout&&!siteCfg.checkout.salesOpen){$('siteNotice').textContent=siteCfg.checkout.closedMessage;$('siteNotice').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});return}
+  if(!cartMode&&product&&!$('size').value.trim()&&!$('singleVariant').classList.contains('hidden')){$('size').focus();return}
+  if(!validateDelivery(false))return;
+  persist();showStep(3,true);
+});
+
+/* ---------- pagamento (Pix / cartão / parcelas / 3DS) ---------- */
+function setCardInfo(text,err){const i=$('cardInfo');i.textContent=text||'';i.className='cardinfo'+(err?' err':'')}
+function typeEnabled(t){return !!payCfg&&payCfg.card&&(t==='debit_card'?payCfg.card.debit:payCfg.card.credit)}
+function pickPm(autoSwitch){
+  cardPm=null;if(!cardList.length){setCardInfo('');return}
+  const want=cardType();let pm=cardList.find(x=>x.payment_type_id===want);
+  if(!pm&&autoSwitch){const other=cardList.find(x=>(x.payment_type_id==='credit_card'||x.payment_type_id==='debit_card')&&typeEnabled(x.payment_type_id));
+    if(other){const r=document.querySelector('input[name=ct][value='+other.payment_type_id+']');if(r){r.checked=true;pm=other;onTotalsChanged()}}}
+  if(pm){cardPm={id:pm.id,typeId:pm.payment_type_id,issuerId:pm.issuer&&pm.issuer.id?pm.issuer.id:null};setCardInfo(pm.name||'');return}
+  setCardInfo(want==='debit_card'?'Este cartão não é de débito. Escolha “Crédito” ou use outro cartão.':'Este cartão não é de crédito. Escolha “Débito” ou use outro cartão.',true);
+}
+async function onBin(ev){const bin=ev&&ev.bin;cardList=[];cardPm=null;setCardInfo('');if(!bin)return;
+  try{const r=await mpInst.getPaymentMethods({bin});cardList=(r&&r.results)||[];pickPm(true)}catch(e){setCardInfo('Não foi possível identificar a bandeira do cartão.',true)}}
+function loadMpSdk(){return new Promise((res,rej)=>{if(window.MercadoPago)return res();const sc=document.createElement('script');sc.src='https://sdk.mercadopago.com/js/v2';sc.onload=()=>res();
+  sc.onerror=()=>rej(new Error('Não foi possível carregar o pagamento com cartão. Verifique sua conexão ou pague no Pix.'));document.head.appendChild(sc)})}
+async function ensureMp(){
+  if(mpFields)return;await loadMpSdk();
+  mpInst=new MercadoPago(payCfg.card.publicKey,{locale:'pt-BR'});
+  const st={color:'#ffffff',placeholderColor:'#8a8a8a',fontSize:'17px'};
+  const num=mpInst.fields.create('cardNumber',{placeholder:'Número do cartão',style:st}).mount('cardNumber');
+  const exp=mpInst.fields.create('expirationDate',{placeholder:'Validade (MM/AA)',style:st}).mount('cardExp');
+  const cvv=mpInst.fields.create('securityCode',{placeholder:'CVV',style:st}).mount('cardCvv');
+  num.on('binChange',onBin);mpFields={num,exp,cvv};
+}
+async function buildCardPayload(){
+  if(!cardOk())throw new Error('Pagamento com cartão indisponível no momento. Use o Pix.');
+  await ensureMp();
+  const holder=$('cardName').value.trim();
+  if(!cardPm)throw new Error('Confira o número do cartão.');
+  if(cardPm.typeId!==cardType())throw new Error(cardType()==='debit_card'?'Este cartão não é de débito.':'Este cartão não é de crédito.');
+  if(holder.length<3)throw new Error('Informe o nome impresso no cartão.');
+  const q=currentQuote(),docD=digitsOf($('doc').value);
+  let tk;try{tk=await mpInst.fields.createCardToken({cardholderName:holder,identificationType:docD.length===14?'CNPJ':'CPF',identificationNumber:docD})}
+  catch(e){throw new Error('Confira os dados do cartão (número, validade, código de segurança e nome).')}
+  if(!tk||!tk.id)throw new Error('Não foi possível validar os dados do cartão. Tente novamente.');
+  return {paymentMethod:cardType(),expectedAmount:q.totalCents/100,card:{token:tk.id,paymentMethodId:cardPm.id,issuerId:cardPm.issuerId,installments:q.n,deviceId:window.MP_DEVICE_SESSION_ID||null}};
+}
+function closeThreeDS(){const o=$('tds');if(o)o.remove()}
+function openThreeDS(ch){
+  closeThreeDS();
+  const ov=document.createElement('div');ov.id='tds';ov.className='tds';
+  ov.innerHTML='<div class="tds-box"><div class="tds-head"><span>Confirme o pagamento com o seu banco</span><button type="button" id="tdsClose">FECHAR</button></div><iframe name="tdsFrame" id="tdsFrame" title="Autenticação do banco"></iframe></div>';
+  document.body.appendChild(ov);$('tdsClose').addEventListener('click',closeThreeDS);
+  const f=document.createElement('form');f.method='POST';f.action=ch.url;f.target='tdsFrame';
+  const i=document.createElement('input');i.type='hidden';i.name='creq';i.value=ch.creq;f.appendChild(i);ov.appendChild(f);f.submit();
+}
+window.addEventListener('message',e=>{const fr=$('tdsFrame');if(!fr||e.source!==fr.contentWindow)return;if(e.data&&e.data.status==='COMPLETE'){closeThreeDS();if(order)checkNow()}});
+function syncMethod(){
+  const card=method()==='card'&&cardOk();
+  $('cardPanel').classList.toggle('hidden',!card);$('cardName').required=card;
+  if(card)ensureMp().catch(err=>setCardInfo(err.message,true));
+  onTotalsChanged();
+}
+document.querySelectorAll('input[name=pm]').forEach(r=>r.addEventListener('change',syncMethod));
+document.querySelectorAll('input[name=ct]').forEach(r=>r.addEventListener('change',()=>{pickPm(false);onTotalsChanged()}));
+$('installments').addEventListener('change',onTotalsChanged);
+async function loadPayConfig(){
+  try{const r=await fetch('/api/payments/config');const ct=r.headers.get('content-type')||'';if(!r.ok||ct.indexOf('json')<0)return;payCfg=await r.json()}catch(e){payCfg=null}
+  if(!cardOk())return;
+  $('pmCardOpt').classList.remove('hidden');
+  const c=payCfg.card;
+  $('ctCreditOpt').classList.toggle('hidden',!c.credit);$('ctDebitOpt').classList.toggle('hidden',!c.debit);
+  if(!c.credit&&c.debit)document.querySelector('input[name=ct][value=debit_card]').checked=true;
+  $('ctGrid').style.gridTemplateColumns=(c.credit&&c.debit)?'1fr 1fr':'1fr';
+  $('pmCardHint').textContent=(c.credit&&c.debit?'Crédito ou débito':c.credit?'Crédito':'Débito')+(c.credit&&c.maxInstallments>1?' · até '+c.maxInstallments+'x':'');
+  onTotalsChanged();
+}
+
+/* ---------- criar pedido ---------- */
+function showError(msg){$('error').textContent=msg;$('error').style.display='block'}
+$('formPay').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const btn=$('pay');btn.disabled=true;btn.dataset.busy='1';btn.textContent=method()==='card'?'PROCESSANDO PAGAMENTO…':'CRIANDO COBRANÇA…';$('error').style.display='none';
+  try{
+    if(siteCfg&&siteCfg.checkout&&!siteCfg.checkout.salesOpen)throw new Error(siteCfg.checkout.closedMessage);
+    if(!validateDelivery(true)){showStep(2,true);validateDelivery(false);throw new Error('Confira os dados de entrega.')}
+    const o=curShip(),pick=!o.requiresAddress;
+    const num=$('semNumero').checked?'S/N':$('numero').value.trim();
+    const nfNote=$('nfSame').checked?'':'Nota fiscal em nome de: '+$('nfNome').value.trim();
+    const obs=[$('obs').value.trim(),nfNote].filter(Boolean).join(' | ');
+    const common={name:fullName(),cpf:digitsOf($('doc').value),email:$('email').value.trim(),phone:digitsOf($('telefone').value),additionalData:obs,
+      checkoutToken:checkoutToken(),couponCode:couponState?couponState.code:null,acceptsMarketing:$('offers').checked,
+      shipping:{optionId:o.id},
+      address:{cep:digitsOf(addr.cep),street:($('rua').value||addr.street||'').trim(),number:pick?'':num,complement:$('complemento').value.trim(),neighborhood:($('bairro').value||addr.neighborhood||'').trim(),city:($('cidade').value||addr.city||'').trim(),state:addr.state||$('uf').value}};
+    if(method()==='card')Object.assign(common,await buildCardPayload());
+    const isCard=method()==='card';let r,d;
+    if(cartMode){
+      const its=RSShop.getCart().map(it=>({productId:it.productId,quantity:it.quantity,size:it.size,color:it.color}));
+      r=await fetch(isCard?'/api/payments/create-cart':'/api/payments/pix/create-cart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({items:its},common))});
+      d=await r.json();if(!r.ok)throw new Error(d.error||'Não deu pra gerar o pagamento. Tente de novo');
+      if(d.status!=='FAILED'&&d.status!=='ERROR')RSShop.clearCart();
+    }else{
+      r=await fetch(isCard?'/api/payments/create':'/api/payments/pix/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({productId:product.id,quantity:qty,size:$('size').value,color:$('color').value},common))});
+      d=await r.json();if(!r.ok)throw new Error(d.error||'Não deu pra gerar o pagamento. Tente de novo');
+    }
+    openPayment(d);
+    if(d.status==='PENDING'&&d.threeDs)openThreeDS(d.threeDs);
+  }catch(err){resetToken();showError(err.message);if(/cupom/i.test(err.message)){couponState=null;onTotalsChanged()}}
+  finally{btn.disabled=false;delete btn.dataset.busy;onTotalsChanged()}
+});
+
+/* ---------- painel de pagamento (tudo vem do servidor) ---------- */
+function stopTimers(){if(timer){clearInterval(timer);timer=null}if(expiryTimer){clearInterval(expiryTimer);expiryTimer=null}}
+function showExpiry(expiresAt){
+  if(expiryTimer)clearInterval(expiryTimer);
+  if(!expiresAt){$('expiry').textContent='';return}
+  const end=new Date(expiresAt).getTime();
+  const tick=()=>{const left=Math.max(0,Math.floor((end-Date.now())/1000));$('expiry').textContent=left>0?'Este PIX expira em '+String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0'):''};
+  tick();expiryTimer=setInterval(tick,1000);
+}
+function methodLabel(d){
+  if(!d.paymentMethod||d.paymentMethod==='pix')return '';
+  const kind=d.paymentMethod==='debit_card'?'Débito':'Crédito'+(d.installments>1?' '+d.installments+'x':' à vista');
+  const brand=d.card&&d.card.brand?String(d.card.brand).replace(/^deb/,'').toUpperCase():'';
+  return kind+(brand?' '+brand:'')+(d.card&&d.card.last4?' final '+d.card.last4:'');
+}
+function applyOrder(d){
+  order=d;const isCard=!!d.paymentMethod&&d.paymentMethod!=='pix';
+  $('orderRef').textContent='#'+String(d.id).slice(0,8);
+  let sum='Valor: '+money(d.amount);
+  if(d.shipping)sum+=' · '+(d.shipping.label||'Entrega')+(d.shipping.amount>0?' ('+money(d.shipping.amount)+')':'');
+  if(d.discount>0&&d.coupon)sum+=' · cupom '+d.coupon+': − '+money(d.discount);
+  if(isCard){sum+=' · '+methodLabel(d);if(d.interest>0)sum+=' · inclui '+money(d.interest)+' de acréscimo do parcelamento';if(d.installments>1)sum+=' · '+d.installments+'x de '+money(d.amount/d.installments)}
+  $('orderSummary').textContent=sum;
+  $('paid').style.display='none';$('failed').style.display='none';$('note').style.display='none';$('retry').classList.add('hidden');
+  $('retry').textContent=isCard?'TENTAR NOVAMENTE':'GERAR UM NOVO PIX';
+  if(d.status==='PAID'){stopTimers();closeThreeDS();$('pixArea').classList.add('hidden');$('paymentStatus').textContent='Pagamento aprovado';$('paid').style.display='block';resetToken();return}
+  if(d.status==='PENDING'&&isCard){$('pixArea').classList.add('hidden');
+    $('paymentStatus').textContent=d.cardMessage&&/banco/i.test(d.cardMessage)?'Aguardando o seu banco…':'Pagamento em análise…';
+    $('note').textContent=d.cardMessage||'Estamos confirmando o seu pagamento. Esta página atualiza sozinha.';$('note').style.display='block';return}
+  if(d.status==='PENDING'&&d.pix){$('pixArea').classList.remove('hidden');$('paymentStatus').textContent='Aguardando pagamento…';$('qr').src=d.pix.qrCodeBase64;$('pixCode').value=d.pix.qrCode;showExpiry(d.pix.expiresAt);return}
+  stopTimers();closeThreeDS();$('pixArea').classList.add('hidden');
+  const labels=isCard?{EXPIRED:['Pagamento expirado','O banco não confirmou a tempo. Nenhum valor foi cobrado.'],FAILED:['Pagamento recusado',d.cardMessage||'O pagamento no cartão não foi aprovado. Nenhum valor foi cobrado.'],ERROR:['Erro no pagamento','Não foi possível concluir este pedido. Nenhum valor foi cobrado.']}
+   :{EXPIRED:['PIX expirado','O tempo para pagar este PIX acabou. Nenhum valor foi cobrado.'],FAILED:['Pagamento não concluído','O pagamento foi recusado ou expirou sem ser pago. Nenhum valor foi cobrado.'],ERROR:['Erro no pagamento','Não foi possível concluir este pedido. Nenhum valor foi cobrado.']};
+  const l=labels[d.status]||['Pagamento não concluído','Este pedido não está mais aguardando pagamento.'];
+  $('paymentStatus').textContent=l[0];$('failed').textContent=l[1];$('failed').style.display='block';$('retry').classList.remove('hidden');resetToken();
+}
+function openPayment(d){
+  $('formDelivery').classList.add('hidden');$('formPay').classList.add('hidden');$('stepper').classList.add('hidden');
+  $('payment').classList.remove('hidden');applyOrder(d);
+  history.replaceState(null,'','?pedido='+encodeURIComponent(d.id));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(d.status==='PENDING')startPolling();
+}
+function startPolling(){if(timer)clearInterval(timer);
+  timer=setInterval(async()=>{try{const r=await fetch('/api/payments/orders/'+encodeURIComponent(order.id));const d=await r.json();if(!r.ok)return;applyOrder(d)}catch(e){}},5000)}
+async function checkNow(){try{const r=await fetch('/api/payments/orders/'+encodeURIComponent(order.id));const d=await r.json();if(r.ok)applyOrder(d)}catch(e){}}
+$('retry').addEventListener('click',()=>{
+  stopTimers();closeThreeDS();resetToken();$('payment').classList.add('hidden');
+  history.replaceState(null,'',location.pathname+(cartMode?'?modo=carrinho':(slug?'?produto='+encodeURIComponent(slug):'')));
+  if(resumeId){location.href='catalogo.html';return}
+  $('stepper').classList.remove('hidden');showStep(3,false);
+});
+$('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('pixCode').value);$('copy').textContent='PIX COPIADO ✓';setTimeout(()=>$('copy').textContent='COPIAR PIX',1800)}catch(e){$('pixCode').select()}});
+async function resume(){
+  try{const r=await fetch('/api/payments/orders/'+encodeURIComponent(resumeId));const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Pedido não encontrado.');
+    $('loading').classList.add('hidden');$('app').classList.remove('hidden');openPayment(d)}
+  catch(e){$('loading').textContent=e.message||'Não deu pra consultar o pedido.'}
+}
+
+/* ---------- carga inicial ---------- */
+function start(){
+  const s=loadSaved();
+  if(s.email){$('email').value=s.email;$('email').readOnly=true;$('emailAlt').classList.remove('hidden')}
+  if(s.nome)$('nome').value=s.nome;if(s.sobrenome)$('sobrenome').value=s.sobrenome;if(s.telefone)$('telefone').value=maskPhone(s.telefone);
+  if(s.complemento)$('complemento').value=s.complemento;
+  if(s.offers===false)$('offers').checked=false;
+  if(s.semNumero){$('semNumero').checked=true;$('numero').disabled=true}else if(s.numero)$('numero').value=s.numero;
+  $('loading').classList.add('hidden');$('app').classList.remove('hidden');
+  history.replaceState({step:2},'','');
+  onTotalsChanged();
+  if(s.cep){$('cep').value=maskCep(s.cep);onCepChange()}
+}
+async function load(){
+  if(cartMode){
+    if(!RSShop.getCart().length){$('loading').textContent='Seu carrinho está vazio.';return}
+    return start();
+  }
+  if(!slug){$('loading').textContent='Nenhum produto escolhido.';return}
+  try{const r=await fetch('/api/products/'+encodeURIComponent(slug));const d=await r.json();if(!r.ok)throw new Error(d.error);product=d.product;
+    const q=Number(qs.get('quantity'));if(q>0)qty=Math.min(20,q);
+    if(qs.get('size'))$('size').value=qs.get('size');if(qs.get('color'))$('color').value=qs.get('color');
+    if(!qs.get('size'))$('singleVariant').classList.remove('hidden');
+    start()}
+  catch(e){$('loading').textContent=e.message||'Não deu pra carregar o produto.'}
+}
+(window.TNSiteReady||Promise.resolve(null)).then(cfg=>{
+  siteCfg=cfg;if(!cfg||!cfg.checkout)return;const k=cfg.checkout;
+  if(k.notice){$('siteNotice').textContent=k.notice;$('siteNotice').classList.remove('hidden')}
+  if(!k.couponsEnabled)$('couponBox').classList.add('hidden');
+  if(!k.salesOpen&&!resumeId){$('siteNotice').textContent=k.closedMessage;$('siteNotice').classList.remove('hidden');$('toPay').disabled=true}
+});
+loadPayConfig();
+if(resumeId)resume();else load();
+})();
+</script>
+</body>
+</html>
