@@ -15,7 +15,7 @@
     localCepTo: 65139999,
     motoboyPaidCents: 1500,        // "Entrega via Motoboy" (mesmo dia se pedir até as 14h)
     motoboyCutoffHour: 14,
-    sedexFreeFromCents: 49900,     // SEDEX grátis a partir deste subtotal (0 = nunca)
+    sedexFreeFromCents: 0,         // SEDEX grátis a partir deste subtotal (0 = nunca)
     // SEDEX por região (tabela fixa — não é cotação ao vivo dos Correios).
     sedex: {
       MA: { cents: 1452, days: 4 },

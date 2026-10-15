@@ -9,10 +9,11 @@ test('CEP local libera motoboy grátis, motoboy pago, Uber/99, SEDEX e retirada'
   const ids = S.rules.options('65125145', 30000).map((o) => o.id);
   assert.deepEqual(ids, ['motoboy_free', 'sedex', 'motoboy_paid', 'uber99', 'pickup']);
 });
-test('CEP de fora não tem motoboy; SEDEX por região e grátis acima do mínimo', () => {
+test('CEP de fora não tem motoboy; SEDEX por região, sem frete grátis', () => {
   assert.deepEqual(S.rules.options('01310100', 30000).map((o) => o.id), ['sedex', 'pickup']);
   assert.equal(S.rules.find('01310100', 30000, 'sedex').priceCents, 3490);
-  assert.equal(S.rules.find('01310100', 49900, 'sedex').priceCents, 0);
+  assert.equal(S.rules.find('01310100', 49900, 'sedex').priceCents, 3490);
+  assert.equal(S.rules.find('01310100', 99900, 'sedex').priceCents, 3490);
 });
 test('servidor recalcula o frete e valida o endereço', () => {
   const r = S.parseShipping({ shipping: { optionId: 'motoboy_paid', priceCents: 1 }, address: addr }, 30000);

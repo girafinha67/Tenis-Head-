@@ -112,22 +112,22 @@
   <div class="wrap">
     <p class="eyebrow" style="color:#e10600;margin-bottom:14px">LOJA FÍSICA</p>
     <h2 class="map-title">Onde ficamos?</h2>
-    <p class="map-addr">Tênis Sneakers — R. Venezuela, Olho d'Água, São Luís — MA, 65065-260</p>
+    <p class="map-addr">Tênis Head — Av. Sol Nascente, 9, Sol e Mar, São Luís — MA, 65066-620</p>
     <div class="map-tabs" role="tablist">
       <button type="button" class="map-tab active" data-view="m">Mapa</button>
       <button type="button" class="map-tab" data-view="k">Satélite 3D</button>
     </div>
     <div class="map-box">
       <iframe id="storeMap" title="Localização da Tênis Head no Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen
-        src="https://www.google.com/maps?q=T%C3%AAnis+sneakers+R.+Venezuela+Olho+D%27agua+S%C3%A3o+Lu%C3%ADs+MA+65065-260&amp;z=18&amp;hl=pt-BR&amp;output=embed"></iframe>
+        src="https://www.google.com/maps?q=T%C3%AAnis+head+Av.+Sol+Nascente+9+Sol+e+Mar+S%C3%A3o+Lu%C3%ADs+MA+65066-620&amp;z=18&amp;hl=pt-BR&amp;output=embed"></iframe>
     </div>
-    <a class="btn map-btn" href="https://maps.app.goo.gl/NEKR8N39xcmh6SHC8" target="_blank" rel="noopener">ABRIR NO GOOGLE MAPS (3D / ROTAS)</a>
+    <a class="btn map-btn" href="https://maps.app.goo.gl/hJ8VfWAEFobej4iS7" target="_blank" rel="noopener">ABRIR NO GOOGLE MAPS (3D / ROTAS)</a>
   </div>
 </section>
 <script>
 (function(){
   var f=document.getElementById('storeMap'); if(!f) return;
-  var base='https://www.google.com/maps?q=T%C3%AAnis+sneakers+R.+Venezuela+Olho+D%27agua+S%C3%A3o+Lu%C3%ADs+MA+65065-260&z=18&hl=pt-BR&output=embed';
+  var base='https://www.google.com/maps?q=T%C3%AAnis+head+Av.+Sol+Nascente+9+Sol+e+Mar+S%C3%A3o+Lu%C3%ADs+MA+65066-620&z=18&hl=pt-BR&output=embed';
   Array.prototype.forEach.call(document.querySelectorAll('.map-tab'),function(b){
     b.addEventListener('click',function(){
       Array.prototype.forEach.call(document.querySelectorAll('.map-tab'),function(x){x.classList.remove('active');});
@@ -274,16 +274,20 @@
   // seções vazias.
   var FALLBACK_HOME_CONTENT = {
     topbar: [
-      'FRETE GRÁTIS EM PEDIDOS ACIMA DE R$ 499',
+      'HÁ ANOS NO MERCADO DE TÊNIS E MODA',
       'PAGOU NO PIX, SEU PEDIDO SAI PRIMEIRO',
     ],
     hero: [
       { image: 'assets/hero/nike-air-force-black.jpg', link: 'catalogo.html?brand=Nike' },
       { image: 'assets/hero/nike-jordan-travis-scott.jpg', link: 'catalogo.html?brand=Nike' },
       { image: 'assets/hero/nike-air-force-verde.jpg', link: 'catalogo.html?brand=Nike' },
+      { image: 'assets/hero/puma-speedcat-og.jpg', link: 'catalogo.html?q=Speedcat' },
+      { image: 'assets/hero/adidas-adizero-adios.jpg', link: 'catalogo.html?q=Adizero' },
+      { image: 'assets/hero/adidas-samba-originals.jpg', link: 'catalogo.html?q=Samba' },
+      { image: 'assets/hero/adidas-samba-listras.jpg', link: 'catalogo.html?q=Samba' },
     ],
     benefits: [
-      { icon: '🚚', title: 'Frete grátis', text: 'Em pedidos acima de R$ 499.' },
+      { icon: '🏆', title: 'Há anos no mercado', text: 'De tênis e moda.' },
       { icon: '↩️', title: 'Troca fácil', text: 'Até 7 dias depois que você receber.' },
       { icon: '🔒', title: 'Pagamento seguro', text: 'Pix seguro, confirmação automática.' },
       { icon: '🎧', title: 'Atendimento', text: 'Fale com a gente direto no WhatsApp.' },
