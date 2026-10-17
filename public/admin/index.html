@@ -82,7 +82,7 @@
         <tr>
           <td>${window.RshoesAdmin.escapeHtml(p.name)}</td>
           <td>${money(p.price)}</td>
-          <td><span class="pill ${p.active ? 'pill-on' : 'pill-off'}">${p.active ? 'Ativo' : 'Inativo'}</span></td>
+          <td><span class="pill ${p.active ? 'pill-on' : 'pill-off'}">${p.active ? 'Ativo' : 'Desativado'}</span></td>
           <td>${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
         </tr>`).join('');
       document.getElementById('recentProductsBody').innerHTML = rows || '<tr><td colspan="4">Nenhum produto cadastrado ainda.</td></tr>';

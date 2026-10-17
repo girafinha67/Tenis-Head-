@@ -472,17 +472,16 @@
     track.style.animationDuration = Math.max(12, gw / 60) + 's'; // ~60 px por segundo
   }
 
+  // Faixa "Principais marcas": lista fixa (não depende dos produtos cadastrados).
+  var MAIN_BRANDS = ['Nike','Adidas','Puma','Lacoste','ON Cloud','Jordan','All Star','New Balance'];
+  document.getElementById('brandsWrap').style.display = '';
+  buildBrandsMarquee(document.getElementById('brandsTrack'), MAIN_BRANDS);
+
   var grid = document.getElementById('productGrid');
   fetch('/api/products?sort=relevant&pageSize=8')
     .then(function(r){ return r.json(); })
     .then(function(data){
       var list = (data && data.products) || [];
-      var brands = (data && data.brands) || [];
-      var brandsTrack = document.getElementById('brandsTrack');
-      if(brands.length){
-        document.getElementById('brandsWrap').style.display = '';
-        buildBrandsMarquee(brandsTrack, brands);
-      }
       if(!list.length){
         grid.innerHTML = '<p style="grid-column:1/-1;color:var(--mute);text-align:center;padding:40px 0">Tênis novos chegando em breve.</p>';
         return;

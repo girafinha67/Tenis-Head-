@@ -151,8 +151,10 @@ window.RSShop = (function () {
   function productBadges(p) {
     var badges = [];
     if (p.promo_price) badges.push('<span class="pc-badge sale">OFERTA</span>');
+    // "NOVO" some sozinho 24h depois que o produto entrou no catálogo.
     var created = p.created_at ? new Date(p.created_at) : null;
-    if (created && (Date.now() - created.getTime()) < 1000 * 60 * 60 * 24 * 21) badges.push('<span class="pc-badge">NOVO</span>');
+    var age = created && !isNaN(created.getTime()) ? Date.now() - created.getTime() : null;
+    if (age !== null && age < 1000 * 60 * 60 * 24) badges.push('<span class="pc-badge">NOVO</span>');
     if (p.featured) badges.push('<span class="pc-badge">DESTAQUE</span>');
     if (Number(p.stock) === 0) badges.push('<span class="pc-badge" style="background:var(--mute)">ESGOTADO</span>');
     return badges.join('');

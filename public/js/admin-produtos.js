@@ -5,6 +5,7 @@
   let currentImages = [];
   let deleteTargetId = null;
   let searchTerm = '';
+  let statusFilter = 'all';
 
   const esc = window.RshoesAdmin.escapeHtml;
   const modalBackdrop = document.getElementById('productModalBackdrop');
@@ -46,26 +47,68 @@
     });
   }
 
-  function fileToDataUrl(file) {
+  let pendingUploads = 0;
+  let saving = false;
+  const saveBtn = () => document.getElementById('productSaveBtn');
+
+  function updateSaveBtn() {
+    const btn = saveBtn();
+    if (!btn) return;
+    if (saving) { btn.disabled = true; btn.textContent = 'Salvando…'; }
+    else if (pendingUploads > 0) { btn.disabled = true; btn.textContent = 'Enviando fotos…'; }
+    else { btn.disabled = false; btn.textContent = 'Salvar produto'; }
+  }
+
+  function blobToDataUrl(blob) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
       reader.onerror = reject;
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(blob);
     });
   }
 
+  // Reduz fotos grandes do celular (máx. 1600px) antes de enviar: sobe bem mais rápido.
+  async function fileToDataUrl(file) {
+    const type = (file.type || '').toLowerCase();
+    if (!/^image\/(jpeg|png|webp)$/.test(type) || file.size < 400 * 1024) return blobToDataUrl(file);
+    try {
+      const bitmap = await createImageBitmap(file);
+      const max = 1600;
+      const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+      if (scale === 1 && file.size < 900 * 1024) return blobToDataUrl(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(bitmap.width * scale);
+      canvas.height = Math.round(bitmap.height * scale);
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      const outType = type === 'png' || type === 'image/png' ? 'image/webp' : type;
+      const blob = await new Promise((res) => canvas.toBlob(res, outType, 0.88));
+      return blob && blob.size < file.size ? blobToDataUrl(blob) : blobToDataUrl(file);
+    } catch (e) {
+      return blobToDataUrl(file);
+    }
+  }
+
   async function handleFiles(fileList) {
-    for (const file of Array.from(fileList)) {
+    const files = Array.from(fileList);
+    pendingUploads += files.length;
+    updateSaveBtn();
+    // Todas as fotos sobem ao mesmo tempo; a ordem escolhida é mantida.
+    const results = await Promise.all(files.map(async (file) => {
       try {
         const dataUrl = await fileToDataUrl(file);
         const result = await window.RshoesApi.post('/admin/uploads', { image: dataUrl });
-        currentImages.push(result.url);
-        renderImagePreview();
+        return result.url;
       } catch (err) {
         window.RshoesAdmin.toast(`Falha ao enviar "${file.name}": ${err.message}`, true);
+        return null;
+      } finally {
+        pendingUploads -= 1;
+        updateSaveBtn();
       }
-    }
+    }));
+    results.filter(Boolean).forEach((url) => currentImages.push(url));
+    renderImagePreview();
   }
 
   function openModal(product) {
@@ -86,6 +129,7 @@
     document.getElementById('p-active').checked = product ? !!product.active : true;
     currentImages = product ? [...(product.images || [])] : [];
     renderImagePreview();
+    updateSaveBtn();
     modalBackdrop.classList.add('open');
   }
   function closeModal() { modalBackdrop.classList.remove('open'); }
@@ -94,13 +138,47 @@
     return String(str || '').split(',').map((s) => s.trim()).filter(Boolean);
   }
 
+  function stateOf(p) {
+    return {
+      active: !!p.active,
+      out: Number(p.stock) <= 0,
+      low: Number(p.stock) > 0 && Number(p.stock) <= 3,
+    };
+  }
+
   function filteredProducts() {
-    if (!searchTerm) return products;
+    let list = products;
+    if (statusFilter === 'active') list = list.filter((p) => p.active);
+    else if (statusFilter === 'inactive') list = list.filter((p) => !p.active);
+    else if (statusFilter === 'out') list = list.filter((p) => stateOf(p).out);
+    if (!searchTerm) return list;
     const t = searchTerm.toLowerCase();
-    return products.filter((p) => p.name.toLowerCase().includes(t) || (p.brand || '').toLowerCase().includes(t) || (p.sku || '').toLowerCase().includes(t));
+    return list.filter((p) => p.name.toLowerCase().includes(t) || (p.brand || '').toLowerCase().includes(t) || (p.sku || '').toLowerCase().includes(t));
+  }
+
+  function renderStatusFilters() {
+    const box = document.getElementById('statusFilters');
+    if (!box) return;
+    const counts = {
+      all: products.length,
+      active: products.filter((p) => p.active).length,
+      inactive: products.filter((p) => !p.active).length,
+      out: products.filter((p) => stateOf(p).out).length,
+    };
+    const defs = [['all', 'Todos'], ['active', 'Ativos'], ['inactive', 'Desativados'], ['out', 'Sem estoque']];
+    box.innerHTML = defs.map(([k, label]) => `<button type="button" data-filter="${k}" class="${statusFilter === k ? 'on' : ''}">${label}<span class="n">${counts[k]}</span></button>`).join('');
+    box.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { statusFilter = b.dataset.filter; renderRows(); }));
+  }
+
+  function statusHtml(p) {
+    const st = stateOf(p);
+    const main = `<button type="button" class="pill ${st.active ? 'pill-on' : 'pill-off'}" data-toggle="${p.id}" title="${st.active ? 'Clique para desativar' : 'Clique para ativar'}">${st.active ? 'Ativo' : 'Desativado'}</button>`;
+    const stock = st.out ? '<span class="pill pill-out">Sem estoque</span>' : (st.low ? `<span class="pill pill-low">Restam ${Number(p.stock)}</span>` : '');
+    return `<div class="status-cell">${main}${stock}</div>`;
   }
 
   function renderRows() {
+    renderStatusFilters();
     const body = document.getElementById('productsBody');
     const list = filteredProducts();
     if (!list.length) {
@@ -111,16 +189,16 @@
       const catLabel = (p.category_tags || []).map(categoryTagLabel).join(', ');
       const img = p.images && p.images[0] ? p.images[0] : '../assets/product-tenis.jpg';
       return `
-        <tr class="prod-row">
+        <tr class="prod-row${p.active ? '' : ' is-inactive'}">
           <td class="cell-thumb"><img class="thumb" src="${esc(img)}" alt=""></td>
           <td class="cell-name">${esc(p.name)}${p.featured ? ' ⭐' : ''}</td>
-          <td>${catLabel ? esc(catLabel) : '—'}</td>
-          <td>${money(p.promo_price != null ? p.promo_price : p.price)}${p.promo_price != null ? ` <span style="color:var(--grey); text-decoration:line-through; font-size:0.78rem;">${money(p.price)}</span>` : ''}</td>
-          <td>
+          <td data-label="Categoria">${catLabel ? esc(catLabel) : '—'}</td>
+          <td data-label="Preço">${money(p.promo_price != null ? p.promo_price : p.price)}${p.promo_price != null ? ` <span style="color:var(--grey); text-decoration:line-through; font-size:0.78rem;">${money(p.price)}</span>` : ''}</td>
+          <td data-label="Estoque">
             <input type="number" inputmode="numeric" min="0" value="${p.stock}" data-stock="${p.id}" class="stock-input" aria-label="Estoque de ${esc(p.name)}">
           </td>
-          <td><span class="pill ${p.active ? 'pill-on' : 'pill-off'}">${p.active ? 'Ativo' : 'Inativo'}</span></td>
-          <td class="row-actions">
+          <td data-label="Status">${statusHtml(p)}</td>
+          <td class="row-actions" data-label="Ações">
             <button class="icon-btn" data-edit="${p.id}" title="Editar">✎</button>
             <button class="icon-btn" data-toggle="${p.id}" title="${p.active ? 'Desativar' : 'Ativar'}">${p.active ? '🚫' : '✅'}</button>
             <button class="icon-btn danger" data-delete="${p.id}" title="Excluir">🗑</button>
@@ -131,18 +209,27 @@
     body.querySelectorAll('[data-edit]').forEach((btn) => btn.addEventListener('click', () => openModal(products.find((p) => p.id == btn.dataset.edit))));
     body.querySelectorAll('[data-delete]').forEach((btn) => btn.addEventListener('click', () => { deleteTargetId = btn.dataset.delete; deleteBackdrop.classList.add('open'); }));
     body.querySelectorAll('[data-toggle]').forEach((btn) => btn.addEventListener('click', async () => {
+      const p = products.find((x) => x.id == btn.dataset.toggle);
+      if (!p || btn.disabled) return;
+      body.querySelectorAll(`[data-toggle="${p.id}"]`).forEach((b) => { b.disabled = true; });
       try {
-        await window.RshoesApi.patch(`/admin/products/${btn.dataset.toggle}/toggle`);
-        window.RshoesAdmin.toast('Status atualizado.');
-        load();
+        const r = await window.RshoesApi.patch(`/admin/products/${p.id}/toggle`);
+        p.active = r && typeof r.active === 'boolean' ? (r.active ? 1 : 0) : (p.active ? 0 : 1);
+        window.RshoesAdmin.toast(p.active ? 'Produto ativado.' : 'Produto desativado.');
       } catch (err) { window.RshoesAdmin.toast(err.message, true); }
+      renderRows();
     }));
     body.querySelectorAll('[data-stock]').forEach((input) => input.addEventListener('change', async () => {
+      const p = products.find((x) => x.id == input.dataset.stock);
+      if (!p) return;
+      const value = Number(input.value);
+      if (!Number.isInteger(value) || value < 0) { window.RshoesAdmin.toast('Estoque deve ser um número inteiro maior ou igual a zero.', true); input.value = p.stock; return; }
       try {
-        await window.RshoesApi.patch(`/admin/products/${input.dataset.stock}/stock`, { stock: Number(input.value) });
-        window.RshoesAdmin.toast('Estoque atualizado.');
-        load();
-      } catch (err) { window.RshoesAdmin.toast(err.message, true); }
+        await window.RshoesApi.patch(`/admin/products/${p.id}/stock`, { stock: value });
+        p.stock = value;
+        window.RshoesAdmin.toast(value === 0 ? 'Estoque zerado: produto marcado como sem estoque.' : 'Estoque atualizado.');
+      } catch (err) { window.RshoesAdmin.toast(err.message, true); input.value = p.stock; }
+      renderRows();
     }));
   }
 
@@ -180,6 +267,7 @@
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (saving || pendingUploads > 0) return; // evita salvar 2x/3x o mesmo produto
       const id = document.getElementById('p-id').value;
       const payload = {
         name: document.getElementById('p-name').value.trim(),
@@ -197,6 +285,8 @@
         featured: document.getElementById('p-featured').checked,
         active: document.getElementById('p-active').checked,
       };
+      saving = true;
+      updateSaveBtn();
       try {
         if (id) await window.RshoesApi.put(`/admin/products/${id}`, payload);
         else await window.RshoesApi.post('/admin/products', payload);
@@ -205,6 +295,9 @@
         load();
       } catch (err) {
         window.RshoesAdmin.toast(err.message, true);
+      } finally {
+        saving = false;
+        updateSaveBtn();
       }
     });
 

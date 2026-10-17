@@ -246,6 +246,15 @@ router.post(
     const errors = await validateProductPayload(b);
     if (errors.length) return res.status(400).json({ error: errors[0], errors });
 
+    // Anti-duplicação: mesmo produto (nome, marca, preço e fotos) criado há poucos segundos = clique repetido.
+    const dup = await db.get(
+      `SELECT id, slug FROM products
+       WHERE name = ? AND brand = ? AND price = ? AND images = ? AND created_at > NOW() - INTERVAL '30 seconds'
+       ORDER BY id DESC LIMIT 1`,
+      [String(b.name).trim(), b.brand ? String(b.brand).trim() : '', Number(b.price) || 0, JSON.stringify(b.images || [])]
+    );
+    if (dup) return res.status(200).json({ id: dup.id, slug: dup.slug, duplicate: true });
+
     const slug = await uniqueSlug(b.name);
     const info = await db.run(
       `INSERT INTO products (name, slug, category_id, brand, sku, description, price, promo_price, sizes, colors, images, tags, category_tags, stock, featured, active, updated_at)
