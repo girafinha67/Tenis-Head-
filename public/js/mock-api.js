@@ -18,7 +18,11 @@
     { id: 5, name: 'Linha premium', slug: 'edicao-limitada', image: 'assets/categories/linha-premium.jpg', description: 'Peças exclusivas e numeradas.', order_index: 5, active: true },
     { id: 6, name: 'Vans', slug: 'vans', image: 'assets/categories/vans.jpg', description: 'Clássicos street e skate.', order_index: 6, active: true },
     { id: 7, name: 'Puma', slug: 'puma', image: 'assets/categories/puma.jpg', description: 'Performance e estilo de rua.', order_index: 7, active: true },
+    { id: 8, name: 'Lacoste', slug: 'lacoste', image: 'assets/logos/lacoste.png', description: 'Elegância esportiva.', order_index: 8, active: true },
+    { id: 9, name: 'ON Cloud', slug: 'on-cloud', image: 'assets/logos/on-cloud.png', description: 'Performance suíça para correr.', order_index: 9, active: true },
+    { id: 10, name: 'Hugo Boss', slug: 'hugo-boss', image: 'assets/logos/hugo-boss.png', description: 'Sofisticação e estilo.', order_index: 10, active: true },
   ];
+  var BRAND_CATS = { 'lacoste': /^lacoste/i, 'on-cloud': /^(on|on cloud|oncloud|on running)$/i, 'hugo-boss': /boss/i };
 
   function daysAgo(n) { return new Date(Date.now() - n * 86400000).toISOString(); }
 
@@ -54,13 +58,20 @@
 
   function matchesQuery(p, params) {
     if (params.get('category')) {
-      if (!p.category_tags.includes(params.get('category'))) return false;
+      var catSlug = params.get('category');
+      var byBrand = BRAND_CATS[catSlug] && BRAND_CATS[catSlug].test(String(p.brand || '').trim());
+      if (!p.category_tags.includes(catSlug) && !byBrand) return false;
     }
     if (params.get('categories')) {
       var slugs = params.get('categories').split(',');
       if (!slugs.some(function (s) { return p.category_tags.includes(s); })) return false;
     }
-    if (params.get('brand') && p.brand.toLowerCase() !== params.get('brand').toLowerCase()) return false;
+    if (params.get('brand')) {
+      var wanted = params.get('brand').toLowerCase().trim();
+      var grp = Object.keys(BRAND_CATS).filter(function (k) { return BRAND_CATS[k].test(wanted); })[0];
+      var okBrand = grp ? BRAND_CATS[grp].test(String(p.brand || '').trim()) : p.brand.toLowerCase() === wanted;
+      if (!okBrand) return false;
+    }
     if (params.get('q')) {
       var q = params.get('q').toLowerCase();
       var hay = (p.name + ' ' + p.description + ' ' + p.brand).toLowerCase();

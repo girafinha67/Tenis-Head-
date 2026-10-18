@@ -9,6 +9,9 @@ const CATEGORY_TAGS = [
   { slug: 'edicao-limitada', label: 'Linha premium' },
   { slug: 'vans', label: 'Vans' },
   { slug: 'puma', label: 'Puma' },
+  { slug: 'lacoste', label: 'Lacoste' },
+  { slug: 'on-cloud', label: 'ON Cloud' },
+  { slug: 'hugo-boss', label: 'Hugo Boss' },
 ];
 
 const VALID_CATEGORY_SLUGS = new Set(CATEGORY_TAGS.map((c) => c.slug));
@@ -25,6 +28,9 @@ const CATEGORY_SLUG_TO_TAG = {
   'linha-premium': 'edicao-limitada',
   vans: 'vans',
   puma: 'puma',
+  lacoste: 'lacoste',
+  'on-cloud': 'on-cloud',
+  'hugo-boss': 'hugo-boss',
 };
 
 module.exports = { CATEGORY_TAGS, VALID_CATEGORY_SLUGS, CATEGORY_SLUG_TO_TAG };

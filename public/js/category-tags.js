@@ -11,4 +11,7 @@ window.RSHOES_CATEGORY_TAGS = [
   { slug: 'edicao-limitada', label: 'Linha premium' },
   { slug: 'vans', label: 'Vans' },
   { slug: 'puma', label: 'Puma' },
+  { slug: 'lacoste', label: 'Lacoste' },
+  { slug: 'on-cloud', label: 'ON Cloud' },
+  { slug: 'hugo-boss', label: 'Hugo Boss' },
 ];

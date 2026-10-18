@@ -7,6 +7,7 @@ const { slugify, asyncHandler, parseIntId, escapeLike } = require('../lib/http-u
 const { log } = require('../lib/auth');
 const { deleteImage } = require('../lib/upload');
 const { VALID_CATEGORY_SLUGS, CATEGORY_SLUG_TO_TAG } = require('../lib/category-tags');
+const brandAliases = require('../lib/brand-aliases');
 
 const router = express.Router();
 
@@ -117,10 +118,15 @@ router.get(
       const tagSlugs = new Set([slug]);
       if (CATEGORY_SLUG_TO_TAG[slug]) tagSlugs.add(CATEGORY_SLUG_TO_TAG[slug]);
       const tagList = Array.from(tagSlugs);
+      // Categorias de marca (Lacoste, ON Cloud, Hugo Boss) também casam pela marca do produto:
+      // tênis cadastrados antes da categoria existir entram nela automaticamente.
+      const brandGroup = brandAliases.groupBySlug(slug);
+      const brandPart = brandGroup ? brandAliases.brandClause(brandGroup) : null;
       clauses.push(
-        `(category_id = (SELECT id FROM categories WHERE slug = ?) OR ${tagList.map(() => 'category_tags ILIKE ?').join(' OR ')})`
+        `(category_id = (SELECT id FROM categories WHERE slug = ?) OR ${tagList.map(() => 'category_tags ILIKE ?').join(' OR ')}${brandPart ? ' OR ' + brandPart.sql : ''})`
       );
       params.push(slug, ...tagList.map((s) => `%"${escapeLike(s)}"%`));
+      if (brandPart) params.push(...brandPart.params);
     }
     if (q.categories) {
       const slugs = String(q.categories)
@@ -133,8 +139,16 @@ router.get(
       }
     }
     if (q.brand) {
-      clauses.push('LOWER(brand) = LOWER(?)');
-      params.push(q.brand);
+      // "ON Cloud" também acha produtos salvos como "ON", "On Running" etc.
+      const brandGroup = brandAliases.groupByBrandName(q.brand);
+      if (brandGroup) {
+        const bc = brandAliases.brandClause(brandGroup);
+        clauses.push(bc.sql);
+        params.push(...bc.params);
+      } else {
+        clauses.push('LOWER(TRIM(brand)) = LOWER(TRIM(?))');
+        params.push(q.brand);
+      }
     }
     if (q.ids) {
       const idList = String(q.ids)
@@ -192,7 +206,7 @@ router.get(
       page,
       pageSize,
       totalPages: Math.max(1, Math.ceil(Number(totalRow.n) / pageSize)),
-      brands: brandsRows.map((r) => r.brand),
+      brands: brandAliases.canonicalBrandList(brandsRows.map((r) => r.brand)),
     });
   })
 );

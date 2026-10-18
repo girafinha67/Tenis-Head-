@@ -514,6 +514,9 @@ const REAL_CATEGORIES = [
   { name: 'Linha premium', slug: 'linha-premium', image: '/assets/categories/linha-premium.jpg', description: 'Peças exclusivas e numeradas.', order_index: 5 },
   { name: 'Vans', slug: 'vans', image: '/assets/categories/vans.jpg', description: 'Clássicos street e skate.', order_index: 6 },
   { name: 'Puma', slug: 'puma', image: '/assets/categories/puma.jpg', description: 'Performance e estilo de rua.', order_index: 7 },
+  { name: 'Lacoste', slug: 'lacoste', image: '/assets/logos/lacoste.png', description: 'Elegância esportiva.', order_index: 8 },
+  { name: 'ON Cloud', slug: 'on-cloud', image: '/assets/logos/on-cloud.png', description: 'Performance suíça para correr.', order_index: 9 },
+  { name: 'Hugo Boss', slug: 'hugo-boss', image: '/assets/logos/hugo-boss.png', description: 'Sofisticação e estilo.', order_index: 10 },
 ];
 
 async function seed() {
@@ -526,6 +529,28 @@ async function seed() {
     }
   }
   await ensurePumaCategory();
+  await ensureBrandCategories();
+}
+
+// Lojas que já estavam no ar ganham as categorias Lacoste, ON Cloud e Hugo Boss uma única vez
+// (marcado em `settings`: se o admin apagar uma depois, ela não volta sozinha).
+// Os tênis dessas marcas já entram nelas pela marca — ver lib/brand-aliases.js.
+async function ensureBrandCategories() {
+  for (const slug of ['lacoste', 'on-cloud', 'hugo-boss']) {
+    const flag = `seed_categoria_${slug}`;
+    const done = await get('SELECT value FROM settings WHERE key = ?', [flag]);
+    if (done) continue;
+    const exists = await get('SELECT id FROM categories WHERE slug = ?', [slug]);
+    if (!exists) {
+      const c = REAL_CATEGORIES.find((x) => x.slug === slug);
+      const maxRow = await get('SELECT MAX(order_index) AS m FROM categories');
+      await run(
+        'INSERT INTO categories (name, slug, image, description, order_index, active) VALUES (?, ?, ?, ?, ?, 1)',
+        [c.name, c.slug, c.image, c.description, (Number(maxRow && maxRow.m) || 0) + 1]
+      );
+    }
+    await run("INSERT INTO settings (key, value) VALUES (?, '1') ON CONFLICT (key) DO NOTHING", [flag]);
+  }
 }
 
 // Lojas que já estavam no ar não têm a categoria Puma (a semente só roda com a tabela vazia).

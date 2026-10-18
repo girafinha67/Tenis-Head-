@@ -301,6 +301,9 @@
     { name: 'Linha premium', slug: 'linha-premium', image: 'assets/categories/linha-premium.jpg' },
     { name: 'Vans', slug: 'vans', image: 'assets/categories/vans.jpg' },
     { name: 'Puma', slug: 'puma', image: 'assets/categories/puma.jpg' },
+    { name: 'Lacoste', slug: 'lacoste', image: 'assets/logos/lacoste.png' },
+    { name: 'ON Cloud', slug: 'on-cloud', image: 'assets/logos/on-cloud.png' },
+    { name: 'Hugo Boss', slug: 'hugo-boss', image: 'assets/logos/hugo-boss.png' },
   ];
 
   // Busca com prazo máximo: se a API não responder de forma válida dentro
@@ -424,6 +427,9 @@
     [/adidas/i, 'assets/logos/adidas.png'],
     [/infantil|infantis|kids/i, 'assets/logos/infantis.png'],
     [/puma/i, 'assets/logos/puma.png'],
+    [/lacoste/i, 'assets/logos/lacoste.png'],
+    [/^on(\s*(cloud|running))?$|oncloud/i, 'assets/logos/on-cloud.png'],
+    [/boss/i, 'assets/logos/hugo-boss.png'],
     [/vans/i, 'assets/logos/vans.png'],
     [/premium|jordan/i, 'assets/logos/jordan.png']
   ];
