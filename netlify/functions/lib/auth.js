@@ -16,7 +16,9 @@ const SESSION_REMEMBER_DAYS = 30; // "dispositivo confiável"
 // http:// puro, e o Netlify CLI seta NETLIFY_DEV=true nesse caso — é o sinal
 // que usamos para desligar o Secure só ali. NODE_ENV=development continua
 // funcionando como desligamento manual para qualquer outro setup local.
-const IS_LOCAL_DEV = process.env.NETLIFY_DEV === 'true' || process.env.NODE_ENV === 'development';
+// Na Vercel, `vercel dev` seta VERCEL_ENV=development (http local); deploys reais são sempre HTTPS.
+const IS_LOCAL_DEV =
+  process.env.NETLIFY_DEV === 'true' || process.env.VERCEL_ENV === 'development' || process.env.NODE_ENV === 'development';
 const IS_PROD = !IS_LOCAL_DEV;
 const COOKIE_NAME = 'rshoes_session';
 

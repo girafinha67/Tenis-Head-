@@ -64,7 +64,7 @@
     var scrim = document.createElement('div');
     scrim.className = 'vw-scrim'; scrim.setAttribute('role', 'dialog'); scrim.setAttribute('aria-modal', 'true'); scrim.setAttribute('aria-label', TITLE);
     scrim.innerHTML = '<div class="vw-card"><div class="vw-head"><h2>' + TITLE.replace('nós', 'Nós') + '</h2><button class="vw-close" aria-label="Fechar">' + X + '</button></div>' +
-      '<div class="vw-stage paused"><video playsinline preload="none" poster="' + POSTER + '" loop></video>' +
+      '<div class="vw-stage paused"><video playsinline controlsList="nodownload noremoteplayback" disablePictureInPicture disableRemotePlayback preload="none" poster="' + POSTER + '" loop></video>' +
       '<button class="vw-mute" aria-label="Som">' + SPK_ON + SPK_OFF + '</button>' +
       '<button class="vw-bigplay" aria-label="Reproduzir">' + PLAY + '</button></div></div>';
     document.body.appendChild(scrim);

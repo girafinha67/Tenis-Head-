@@ -1,0 +1,44 @@
+/* Travas visuais da loja: a página não desliza para os lados, nada de arrastar/baixar
+   imagens e ícones, e o texto da interface não é selecionado sem querer.
+   Carrega DEPOIS do site.css. */
+
+/* 1) Página presa na largura da tela (sem "puxar" para os lados nem sobrar espaço vazio) */
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+  overscroll-behavior: none;
+  touch-action: pan-y pinch-zoom;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  overflow-x: hidden; /* navegadores antigos */
+  overflow-x: clip; /* não vira "caixa de rolagem": mantém o cabeçalho fixo funcionando */
+  max-width: 100%;
+  position: relative;
+  overscroll-behavior: none;
+  touch-action: pan-y pinch-zoom;
+}
+
+/* 2) Sem toque azul/cinza ao tocar e sem zoom por duplo toque nos botões e links */
+* { -webkit-tap-highlight-color: transparent; }
+a, button, [role="button"], label, summary { touch-action: manipulation; }
+
+/* 3) Interface não selecionável (campos de digitação continuam normais) */
+body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea, select, [contenteditable="true"] {
+  -webkit-user-select: text; user-select: text; -webkit-touch-callout: default;
+}
+
+/* 4) Imagens, ícones, vídeos e links não são arrastáveis nem têm menu de "salvar imagem" */
+img, svg, picture, video, canvas, a {
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+}
+img, svg, picture, canvas { -webkit-user-select: none; user-select: none; }
+video::-webkit-media-controls-enclosure { overflow: hidden; }
+video::-internal-media-controls-download-button { display: none; }
+
+/* Carrosséis e faixas continuam rolando para o lado normalmente (são caixas de rolagem próprias) */
+.cat-carousel, .fb-track { touch-action: pan-x pan-y; overscroll-behavior-x: contain; }

@@ -36,6 +36,8 @@ function cardImage(image, origin) {
     if (u.hostname === o.hostname) src = u.pathname + u.search;
     else if (/\.supabase\.co$/i.test(u.hostname)) src = u.href;
     if (!src) return image;
+    // Na Vercel o redimensionador é o /_vercel/image (configurado em vercel.json); no Netlify, /.netlify/images.
+    if (process.env.VERCEL) return `${o.origin}/_vercel/image?url=${encodeURIComponent(src)}&w=700&q=75`;
     return `${o.origin}/.netlify/images?url=${encodeURIComponent(src)}&w=700&fm=jpg&q=75`;
   } catch {
     return image;

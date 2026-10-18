@@ -160,3 +160,21 @@ filtros do catálogo e os cards da home usam os slugs da tabela `categories`
 `GET /api/products?category=...` procura por `category_id` **ou** pela tag. Se
 você criar uma categoria nova, adicione o par nesse mapa e em `category-tags.js`
 (front e back).
+
+---
+
+## Deploy na Vercel
+
+O projeto roda na Vercel **sem mudar nada de design ou funcionalidade**: o site estático continua na pasta `public/` e a API é o mesmo app Express (`netlify/functions/api.js`), servido pela função `api/index.js`. O `netlify.toml` continua no projeto, então o deploy no Netlify também segue funcionando.
+
+1. Suba o projeto para o GitHub e, na Vercel, use **Add New > Project** e importe o repositório. Não precisa mudar Framework Preset, Build Command ou Output Directory: o `vercel.json` já define tudo.
+2. Em **Settings > Environment Variables**, cadastre as mesmas variáveis do Netlify (para Production, Preview e Development):
+   `SUPABASE_DB_POOLER_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+   (opcionais: `DB_SCHEMA`, `IPGEO_PROVIDER`, `IPGEO_API_KEY`, `ANALYTICS_RETENTION_DAYS`).
+3. Faça o deploy. Depois de mudar variáveis, é preciso um novo deploy.
+
+Diferenças importantes em relação ao Netlify:
+
+- **Tamanho do envio:** a Vercel aceita no máximo ~4,5 MB por requisição. O painel já reduz as fotos (máx. 1600px) antes de enviar, então fotos de celular passam normalmente.
+- **Prévia do WhatsApp (`/p/<slug>`):** a foto do cartão é redimensionada pelo `/_vercel/image` (configurado em `vercel.json > images`, liberado para `*.supabase.co`).
+- **Rotas:** `/api/*` e `/p/:slug` são reescritas para `api/index.js`; `/admin` redireciona para `/admin/`; URLs sem `.html` (ex.: `/catalogo`) funcionam por `cleanUrls`.

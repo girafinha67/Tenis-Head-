@@ -26,7 +26,7 @@ function dbFailureHint(err) {
   const code = err && err.code;
   const msg = String((err && err.message) || '').replace(/postgres(ql)?:\/\/\S+/gi, '[url]');
   if (!process.env.SUPABASE_DB_POOLER_URL && !process.env.DATABASE_URL) {
-    return 'a variável SUPABASE_DB_POOLER_URL não está definida no Netlify (ou falta fazer um novo deploy).';
+    return 'a variável SUPABASE_DB_POOLER_URL não está definida nas variáveis de ambiente da hospedagem (Vercel/Netlify) ou falta fazer um novo deploy.';
   }
   if (code === '28P01' || /password authentication failed/i.test(msg)) return 'senha do banco incorreta na SUPABASE_DB_POOLER_URL.';
   if (/tenant or user not found/i.test(msg)) return 'usuário ou região do pooler incorretos (copie a URL em Connect > Transaction pooler).';
@@ -34,7 +34,7 @@ function dbFailureHint(err) {
   if (code === 'ETIMEDOUT' || code === 'ECONNREFUSED' || /timeout/i.test(msg)) return 'não foi possível alcançar o servidor do banco (confira host e porta).';
   if (/EMAXCONNSESSION|max clients/i.test(msg)) return 'limite de conexões do modo sessão; troque a porta 5432 por 6543.';
   if (code === '42703' || code === '42P01' || code === '42804' || code === '42P07') {
-    return `o banco já tem tabelas de outro projeto (${code}: ${msg.slice(0, 90)}). Use um projeto Supabase só para esta loja ou defina DB_SCHEMA no Netlify.`;
+    return `o banco já tem tabelas de outro projeto (${code}: ${msg.slice(0, 90)}). Use um projeto Supabase só para esta loja ou defina DB_SCHEMA nas variáveis de ambiente.`;
   }
   if (/ADMIN_EMAIL|ADMIN_PASSWORD/i.test(msg)) return 'confira ADMIN_EMAIL e ADMIN_PASSWORD.';
   if (/invalid url|invalid connection/i.test(msg)) return 'a SUPABASE_DB_POOLER_URL está mal formatada.';
@@ -101,3 +101,5 @@ app.use((err, req, res, next) => {
 });
 
 module.exports.handler = serverless(app);
+// A Vercel usa o app Express direto (ver api/index.js).
+module.exports.app = app;
