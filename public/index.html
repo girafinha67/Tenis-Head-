@@ -15,6 +15,8 @@
 <link rel="stylesheet" href="assets/site.css">
 <link rel="stylesheet" href="assets/guard.css">
 <script src="js/guard.js" defer></script>
+<script src="js/vercel-analytics.js" defer></script>
+<script src="js/img-opt.js"></script>
 <style>
 .manifesto{background:var(--ink);color:#fff}
 .manifesto .map-title{font-size:clamp(2.2rem,6vw,4.4rem);text-transform:uppercase;color:#fff}
@@ -259,6 +261,8 @@
 <script src="js/feedbacks.js"></script>
 <script>
 (function(){
+  // Foto otimizada pelo cache da Vercel (js/img-opt.js); sem ele usa a original.
+  function imgOpt(u, w){ return window.thImg ? window.thImg(u, w) : u; }
   // ---- Conteúdo real de fallback, embutido na própria página. ----
   // A home NUNCA fica em branco esperando banco de dados: renderizamos
   // este conteúdo de imediato, e só substituímos por dados vindos da API
@@ -338,12 +342,12 @@
     var heroCarousel = document.getElementById('heroCarousel');
     function heroBg(s){
       return s.image
-        ? '<img src="'+s.image+'" alt="">'
+        ? '<img src="'+imgOpt(s.image,1920)+'" alt="">'
         : '<svg viewBox="0 0 200 100" fill="none" stroke="#0a0a0a" stroke-width="1"><use href="#shoe"/></svg>';
     }
     heroCarousel.innerHTML = slides.map(function(s, i){
       var cls = 'hero-slide'+(i===0?' active':'');
-      var st = s.image ? ' style="--bg:url(\''+s.image+'\')"' : '';
+      var st = s.image ? ' style="--bg:url(\''+imgOpt(s.image,1920)+'\')"' : '';
       return s.link
         ? '<a class="'+cls+'" href="'+s.link+'" draggable="false"'+st+'>'+heroBg(s)+'</a>'
         : '<div class="'+cls+'"'+st+'>'+heroBg(s)+'</div>';
@@ -444,7 +448,7 @@
     var grid = document.getElementById('catGrid');
     grid.innerHTML = cats.map(function(c){
       var logo = brandLogo(c.name || c.slug);
-      var img = logo ? '<img class="cc-logo" src="'+logo+'" alt="'+c.name+'">' : (c.image ? '<img src="'+c.image+'" alt="">' : '');
+      var img = logo ? '<img class="cc-logo" src="'+logo+'" alt="'+c.name+'">' : (c.image ? '<img src="'+imgOpt(c.image,256)+'" alt="">' : '');
       return '<a class="cat-circle reveal" href="catalogo.html?category='+encodeURIComponent(c.slug)+'">'+
         '<div class="cc-ring">'+img+'</div>'+
         '<h3>'+c.name+'</h3></a>';

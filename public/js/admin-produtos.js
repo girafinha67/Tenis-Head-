@@ -68,21 +68,23 @@
     });
   }
 
-  // Reduz fotos grandes do celular (máx. 1600px) antes de enviar: sobe bem mais rápido.
+  // Reduz as fotos antes de enviar (menos banda no Supabase e upload mais rápido):
+  // máx. 1200px no lado maior (o site mostra no máximo 1080px de largura) e WebP 82%.
+  // Se o navegador não gerar WebP, JPEG 82% (PNG com transparência fica como está).
   async function fileToDataUrl(file) {
     const type = (file.type || '').toLowerCase();
-    if (!/^image\/(jpeg|png|webp)$/.test(type) || file.size < 400 * 1024) return blobToDataUrl(file);
+    if (!/^image\/(jpeg|png|webp)$/.test(type) || file.size < 150 * 1024) return blobToDataUrl(file);
     try {
       const bitmap = await createImageBitmap(file);
-      const max = 1600;
+      const max = 1200;
       const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
-      if (scale === 1 && file.size < 900 * 1024) return blobToDataUrl(file);
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(bitmap.width * scale);
       canvas.height = Math.round(bitmap.height * scale);
       canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      const outType = type === 'png' || type === 'image/png' ? 'image/webp' : type;
-      const blob = await new Promise((res) => canvas.toBlob(res, outType, 0.88));
+      const toBlob = (t) => new Promise((res) => canvas.toBlob(res, t, 0.82));
+      let blob = await toBlob('image/webp');
+      if (!blob || blob.type !== 'image/webp') blob = type === 'image/png' ? null : await toBlob('image/jpeg');
       return blob && blob.size < file.size ? blobToDataUrl(blob) : blobToDataUrl(file);
     } catch (e) {
       return blobToDataUrl(file);
@@ -190,7 +192,7 @@
       const img = p.images && p.images[0] ? p.images[0] : '../assets/product-tenis.jpg';
       return `
         <tr class="prod-row${p.active ? '' : ' is-inactive'}">
-          <td class="cell-thumb"><img class="thumb" src="${esc(img)}" alt=""></td>
+          <td class="cell-thumb"><img class="thumb" src="${esc(window.thImg ? window.thImg(img, 256) : img)}" alt=""></td>
           <td class="cell-name">${esc(p.name)}${p.featured ? ' ⭐' : ''}</td>
           <td data-label="Categoria">${catLabel ? esc(catLabel) : '—'}</td>
           <td data-label="Preço">${money(p.promo_price != null ? p.promo_price : p.price)}${p.promo_price != null ? ` <span style="color:var(--grey); text-decoration:line-through; font-size:0.78rem;">${money(p.price)}</span>` : ''}</td>

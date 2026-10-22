@@ -10,6 +10,8 @@
   "images": {
     "sizes": [256, 640, 700, 1080, 1920],
     "qualities": [75],
+    "minimumCacheTTL": 2592000,
+    "formats": ["image/avif", "image/webp"],
     "remotePatterns": [{ "protocol": "https", "hostname": "**.supabase.co" }]
   },
   "redirects": [

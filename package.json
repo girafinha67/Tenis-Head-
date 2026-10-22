@@ -13,6 +13,6 @@
     "pg": "^8.12.0"
   },
   "scripts": {
-    "test": "node --test tests/whatsapp.test.js tests/no-payments.test.js tests/share-page.test.js tests/vercel.test.js"
+    "test": "node --test tests/whatsapp.test.js tests/no-payments.test.js tests/share-page.test.js tests/vercel.test.js tests/migracao.test.js"
   }
 }

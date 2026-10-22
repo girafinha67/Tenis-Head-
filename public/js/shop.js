@@ -4,6 +4,9 @@
 window.RSShop = (function () {
   'use strict';
 
+  // Foto otimizada pelo cache da Vercel (js/img-opt.js); sem ele devolve a original.
+  function T(u, w) { return window.thImg ? window.thImg(u, w) : u; }
+
   var FAV_KEY = 'rshoes_favorites_v1';
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -91,7 +94,7 @@ window.RSShop = (function () {
     function renderResults(list) {
       if (!list.length) { results.innerHTML = '<p class="search-hint">Nenhum produto encontrado.</p>'; return; }
       results.innerHTML = list.map(function (p) {
-        var img = (p.images && p.images[0]) ? '<img src="' + p.images[0] + '" alt="">' : '<img alt="">';
+        var img = (p.images && p.images[0]) ? '<img src="' + T(p.images[0], 256) + '" alt="">' : '<img alt="">';
         var price = p.promo_price ? money(p.promo_price) : money(p.price);
         return '<a class="search-item" href="produto.html?slug=' + encodeURIComponent(p.slug) + '">' + img +
           '<div><div class="si-name">' + p.name + '</div><div class="si-brand">' + (p.brand || '') + '</div></div>' +
@@ -162,9 +165,9 @@ window.RSShop = (function () {
   function productCardHtml(p) {
     var images = p.images || [];
     var img1 = images[0]
-      ? '<img class="img-1" src="' + images[0] + '" alt="' + p.name + '" loading="lazy">'
+      ? '<img class="img-1" src="' + T(images[0], 640) + '" alt="' + p.name + '" loading="lazy">'
       : '<svg class="img-1" viewBox="0 0 200 100" style="color:#cfcfcf"><use href="#shoe"/></svg>';
-    var img2 = images[1] ? '<img class="img-2" src="' + images[1] + '" alt="">' : '';
+    var img2 = images[1] ? '<img class="img-2" src="' + T(images[1], 640) + '" alt="">' : '';
     var price = p.promo_price
       ? '<span class="pc-price has-promo">' + money(p.promo_price) + '</span><span class="pc-price-old">' + money(p.price) + '</span>'
       : '<span class="pc-price">' + money(p.price) + '</span>';

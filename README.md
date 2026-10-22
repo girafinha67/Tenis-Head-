@@ -178,3 +178,32 @@ Diferenças importantes em relação ao Netlify:
 - **Tamanho do envio:** a Vercel aceita no máximo ~4,5 MB por requisição. O painel já reduz as fotos (máx. 1600px) antes de enviar, então fotos de celular passam normalmente.
 - **Prévia do WhatsApp (`/p/<slug>`):** a foto do cartão é redimensionada pelo `/_vercel/image` (configurado em `vercel.json > images`, liberado para `*.supabase.co`).
 - **Rotas:** `/api/*` e `/p/:slug` são reescritas para `api/index.js`; `/admin` redireciona para `/admin/`; URLs sem `.html` (ex.: `/catalogo`) funcionam por `cleanUrls`.
+- **Vercel Web Analytics:** as páginas públicas (`index`, `catalogo`, `produto`, `favoritos`) carregam `public/js/vercel-analytics.js`, que injeta `/_vercel/insights/script.js`. Para ver os dados, ative em **Projeto > Analytics > Enable** na Vercel e faça um novo deploy. O `/admin` fica de fora de propósito, e a CSP não precisa de mudança (mesma origem). Esse painel é separado do Analytics interno do site (`admin/analytics`).
+- **Fotos pelo cache da Vercel (economia de banda do Supabase):** `public/js/img-opt.js` manda as fotos do Supabase Storage por `/_vercel/image` (WebP/AVIF, redimensionadas, em cache por 30 dias, `vercel.json > images`). O Supabase só é consultado na primeira vez de cada foto. Fora da Vercel (localhost, `netlify.app`) a foto original é usada, e se a versão otimizada falhar a página volta sozinha para a original. Ao criar telas novas com foto de produto, use `thImg(url, largura)` (larguras: 256, 640, 700, 1080 ou 1920).
+- **Upload de fotos no painel:** `admin-produtos.js` reduz cada foto (acima de 150 KB) para no máximo 1200px e WebP 82% antes de enviar ao Supabase, para gastar menos banda e espaço.
+
+---
+
+## Migrar para outra conta do Supabase (ou outro banco)
+
+O script `scripts/migrar-supabase.js` copia produtos, categorias, configurações, depoimentos, cupons e pedidos, baixa cada foto do Supabase antigo, envia para o novo e troca os links no banco novo. O login do painel (`ADMIN_EMAIL`/`ADMIN_PASSWORD`) não é copiado: ele é criado de novo a partir das variáveis.
+
+1. Crie o projeto novo (outra conta do Supabase, ou um Postgres como o Neon + um projeto Supabase só para as fotos). No Supabase novo, pegue a `service_role` key e a Project URL (Project Settings > API) e a connection string do **Session pooler**, porta 5432 (Project Settings > Database).
+2. No computador, com Node 22 instalado, rode `npm install` na pasta do projeto e crie o arquivo `.env.migracao` (não suba para o GitHub; ele já é ignorado):
+
+```
+OLD_DB_URL=postgresql://...  (Session pooler do Supabase antigo)
+OLD_SUPABASE_URL=https://xxxx.supabase.co
+NEW_DB_URL=postgresql://...  (Session pooler do banco novo)
+NEW_SUPABASE_URL=https://yyyy.supabase.co
+NEW_SUPABASE_SERVICE_ROLE_KEY=...
+ADMIN_EMAIL=seu@email.com
+ADMIN_PASSWORD=sua-senha
+```
+
+3. Teste sem alterar nada: `node scripts/migrar-supabase.js --simular` (mostra quantas linhas e fotos seriam copiadas).
+4. Migre: `node scripts/migrar-supabase.js`. Se o banco novo já tiver produtos (ou o site já tiver rodado nele), use `--substituir`, que apaga as tabelas da loja no destino antes de copiar. Use `--analytics` para levar também o histórico do Analytics.
+5. Na Vercel, troque `SUPABASE_DB_POOLER_URL`, `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` pelos do projeto novo e faça um novo deploy. Confira o site e o painel.
+
+Fotos que não puderem ser baixadas ficam com o link antigo e aparecem numa lista no final; reenvie essas pelo painel. O script não apaga nada na conta antiga.
+
