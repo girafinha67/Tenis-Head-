@@ -82,7 +82,13 @@
 <div class="toast-stack" id="toastStack"></div>
 
 <section class="hero" id="hero">
-  <div class="hero-carousel" id="heroCarousel"></div>
+  <div class="hero-carousel hero-video-wrap" id="heroCarousel">
+    <!-- Para trocar o vídeo, coloque o arquivo em assets/video/hero.mp4. Enquanto ele não existir, usa o vídeo "Sobre nós". -->
+    <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="assets/video/sobre-nos.jpg" aria-hidden="true" tabindex="-1" disablePictureInPicture>
+      <source src="assets/video/hero.mp4" type="video/mp4">
+      <source src="assets/video/sobre-nos.mp4" type="video/mp4">
+    </video>
+  </div>
 </section>
 
 <div class="brands" id="brandsWrap" style="display:none">
@@ -336,69 +342,7 @@
     var msgs = content.topbar || [];
     track.innerHTML = msgs.concat(msgs).map(function(m){ return '<span>'+m+'</span>'; }).join('');
 
-    // Hero: apenas imagens de fundo, com crossfade automático a cada 4s (sem texto/botões).
-    // Também dá pra passar arrastando com o dedo (touch) ou o mouse.
-    var slides = content.hero || [];
-    var heroCarousel = document.getElementById('heroCarousel');
-    function heroBg(s){
-      return s.image
-        ? '<img src="'+imgOpt(s.image,1920)+'" alt="">'
-        : '<svg viewBox="0 0 200 100" fill="none" stroke="#0a0a0a" stroke-width="1"><use href="#shoe"/></svg>';
-    }
-    heroCarousel.innerHTML = slides.map(function(s, i){
-      var cls = 'hero-slide'+(i===0?' active':'');
-      var st = s.image ? ' style="--bg:url(\''+imgOpt(s.image,1920)+'\')"' : '';
-      return s.link
-        ? '<a class="'+cls+'" href="'+s.link+'" draggable="false"'+st+'>'+heroBg(s)+'</a>'
-        : '<div class="'+cls+'"'+st+'>'+heroBg(s)+'</div>';
-    }).join('');
-    var heroSlideEls = heroCarousel.querySelectorAll('.hero-slide');
-    if(heroSlideEls.length > 1){
-      var heroIdx = 0;
-      var heroAuto;
-      function heroShow(i){
-        heroSlideEls[heroIdx].classList.remove('active');
-        heroIdx = (i + heroSlideEls.length) % heroSlideEls.length;
-        heroSlideEls[heroIdx].classList.add('active');
-      }
-      function heroNext(){ heroShow(heroIdx+1); }
-      function heroPrev(){ heroShow(heroIdx-1); }
-      function heroRestartAuto(){ clearInterval(heroAuto); heroAuto = setInterval(heroNext, 4000); }
-      heroRestartAuto();
-
-      // arrastar com o dedo (touch)
-      var heroStartX = null;
-      var heroDragged = false;
-      heroCarousel.addEventListener('click', function(e){ if(heroDragged){ e.preventDefault(); heroDragged = false; } });
-      heroCarousel.addEventListener('touchstart', function(e){ heroStartX = e.touches[0].clientX; }, {passive:true});
-      heroCarousel.addEventListener('touchend', function(e){
-        if(heroStartX==null) return;
-        var dx = e.changedTouches[0].clientX - heroStartX;
-        if(Math.abs(dx) > 40){ dx < 0 ? heroNext() : heroPrev(); heroRestartAuto(); heroDragged = true; setTimeout(function(){ heroDragged = false; }, 350); }
-        heroStartX = null;
-      }, {passive:true});
-
-      // arrastar com o mouse
-      var heroMouseDownX = null;
-      heroCarousel.addEventListener('mousedown', function(e){ heroMouseDownX = e.clientX; e.preventDefault(); });
-      window.addEventListener('mouseup', function(e){
-        if(heroMouseDownX==null) return;
-        var dx = e.clientX - heroMouseDownX;
-        if(Math.abs(dx) > 40){ dx < 0 ? heroNext() : heroPrev(); heroRestartAuto(); heroDragged = true; setTimeout(function(){ heroDragged = false; }, 350); }
-        heroMouseDownX = null;
-      });
-
-      // scroll do mouse/trackpad (roda horizontal ou vertical)
-      var heroWheelLock = false;
-      heroCarousel.addEventListener('wheel', function(e){
-        var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-        if(Math.abs(delta) < 12 || heroWheelLock) return;
-        heroWheelLock = true;
-        delta > 0 ? heroNext() : heroPrev();
-        heroRestartAuto();
-        setTimeout(function(){ heroWheelLock = false; }, 500);
-      }, {passive:true});
-    }
+    // Hero: um único vídeo em loop (HTML estático em #hero); as imagens do carrossel antigo não são mais usadas.
 
     document.getElementById('benefitsGrid').innerHTML = (content.benefits||[]).map(function(b){
       return '<div class="benefit"><div class="b-icon">'+b.icon+'</div><div><h3>'+b.title+'</h3><p>'+b.text+'</p></div></div>';

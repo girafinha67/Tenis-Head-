@@ -207,3 +207,15 @@ ADMIN_PASSWORD=sua-senha
 
 Fotos que não puderem ser baixadas ficam com o link antigo e aparecem numa lista no final; reenvie essas pelo painel. O script não apaga nada na conta antiga.
 
+## Tamanhos disponíveis × esgotados (encomenda pelo WhatsApp)
+
+No cadastro do produto (`/admin/produtos.html`) há dois campos: **Tamanhos disponíveis** (`products.sizes`, como sempre)
+e **Tamanhos esgotados** (`products.sold_out_sizes`, coluna nova). O mesmo tamanho não pode estar nos dois (o painel avisa na
+hora e a API recusa com erro 400). Na página do produto os dois aparecem juntos, em ordem numérica; o esgotado tem uma linha
+vermelha, continua selecionável e troca o botão para **Encomendar pelo WhatsApp** (mensagem de encomenda com produto e tamanho).
+Produtos antigos continuam iguais (sem esgotados). A coluna é criada sozinha na primeira requisição; o mesmo SQL está em
+`migrations/2026-10-28_tamanhos_esgotados.sql`. Testes: `tests/tamanhos.test.js` (os de rota precisam do `npm install`).
+
+## Vídeo do hero
+
+O topo da home é um único vídeo em loop (mudo, sem texto). Coloque o arquivo em `public/assets/video/hero.mp4`; enquanto ele não existir, é usado `assets/video/sobre-nos.mp4`. O vídeo flutuante "Sobre nós" roda mudo no mini-card e, ao tocar, amplia e recomeça do início.

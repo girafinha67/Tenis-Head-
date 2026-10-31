@@ -125,6 +125,8 @@
     document.getElementById('p-stock').value = product ? product.stock : 0;
     document.getElementById('p-sku').value = product ? product.sku || '' : '';
     document.getElementById('p-sizes').value = product ? (product.sizes || []).join(', ') : '';
+    document.getElementById('p-sizes-out').value = product ? (product.sold_out_sizes || []).join(', ') : '';
+    showSizesConflict([]);
     document.getElementById('p-colors').value = product ? (product.colors || []).join(', ') : '';
     document.getElementById('p-tags').value = product ? (product.tags || []).join(', ') : '';
     document.getElementById('p-featured').checked = product ? !!product.featured : false;
@@ -138,6 +140,30 @@
 
   function splitList(str) {
     return String(str || '').split(',').map((s) => s.trim()).filter(Boolean);
+  }
+
+  // Lista sem repetidos (34, 34 vira 34), mantendo a ordem digitada.
+  function uniqueList(str) {
+    const seen = new Set();
+    return splitList(str).filter((s) => { const k = s.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+  }
+
+  // Tamanhos que estão nas duas listas ao mesmo tempo (o servidor valida de novo; aqui o aviso aparece na hora).
+  function sizesConflicts() {
+    const out = new Set(uniqueList(document.getElementById('p-sizes-out').value).map((s) => s.toLowerCase()));
+    return uniqueList(document.getElementById('p-sizes').value).filter((s) => out.has(s.toLowerCase()));
+  }
+
+  function showSizesConflict(conflicts) {
+    const hint = document.getElementById('sizesHint');
+    if (!hint) return;
+    if (conflicts.length) {
+      hint.textContent = `O tamanho ${conflicts.join(', ')} está em "disponíveis" e em "esgotados". Deixe em apenas um.`;
+      hint.style.color = '#c0392b';
+    } else {
+      hint.textContent = 'Numerações sem pronta entrega: aparecem riscadas no site e o cliente pode pedir encomenda pelo WhatsApp.';
+      hint.style.color = '';
+    }
   }
 
   function stateOf(p) {
@@ -253,6 +279,7 @@
     document.getElementById('adminSearch').addEventListener('input', (e) => { searchTerm = e.target.value.trim(); renderRows(); });
     document.getElementById('newProductBtn').addEventListener('click', () => openModal(null));
     document.getElementById('productCancelBtn').addEventListener('click', closeModal);
+    ['p-sizes', 'p-sizes-out'].forEach((id) => document.getElementById(id).addEventListener('input', () => showSizesConflict(sizesConflicts())));
     modalBackdrop.addEventListener('click', (e) => { if (e.target === modalBackdrop) closeModal(); });
 
     const imageDrop = document.getElementById('imageDrop');
@@ -280,13 +307,20 @@
         promo_price: document.getElementById('p-promo').value === '' ? null : Number(document.getElementById('p-promo').value),
         stock: Number(document.getElementById('p-stock').value) || 0,
         sku: document.getElementById('p-sku').value.trim() || null,
-        sizes: splitList(document.getElementById('p-sizes').value),
+        sizes: uniqueList(document.getElementById('p-sizes').value),
+        sold_out_sizes: uniqueList(document.getElementById('p-sizes-out').value),
         colors: splitList(document.getElementById('p-colors').value),
         tags: splitList(document.getElementById('p-tags').value),
         images: currentImages,
         featured: document.getElementById('p-featured').checked,
         active: document.getElementById('p-active').checked,
       };
+      const conflicts = sizesConflicts();
+      showSizesConflict(conflicts);
+      if (conflicts.length) {
+        window.RshoesAdmin.toast(`O tamanho ${conflicts.join(', ')} não pode estar em "disponíveis" e em "esgotados" ao mesmo tempo.`, true);
+        return;
+      }
       saving = true;
       updateSaveBtn();
       try {

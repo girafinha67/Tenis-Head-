@@ -79,6 +79,7 @@ function runProductPage({ product, whatsapp = '(98) 99999-9999', origin = 'https
     document: { getElementById: byId, querySelector: () => mk('q'), querySelectorAll: () => [], title: '' },
     RSShop: { money: (v) => 'R$ ' + v, toast: (m) => toasts.push(m), isFavorite: () => false, toggleFavorite() {}, productCardHtml: () => '', wireProductGrid() {} },
     TNWhatsApp: W,
+    TNSizes: require('../public/js/tn-sizes.js'),
     TNSiteReady: Promise.resolve({ contact: { whatsapp } }),
     fetch: (url) => Promise.resolve({ ok: true, json: async () => (String(url).includes('/api/products/') ? { product } : { products: [] }) }),
   };
@@ -88,7 +89,7 @@ function runProductPage({ product, whatsapp = '(98) 99999-9999', origin = 'https
   return { byId, toasts, settle: () => new Promise((r) => setTimeout(r, 20)) };
 }
 const PRODUCT = { id: 7, slug: 'teste', name: 'Nike Air Force Verde', price: 599, stock: 5, sizes: ['38', '39', '40'], colors: [], images: ['https://cdn.x/foto-1.jpg', 'https://cdn.x/foto-2.jpg'] };
-const clickSize = (byId, size) => byId('sizeOptions').handlers.click({ target: { closest: () => ({ dataset: { size }, classList: { add() {}, remove() {} } }) } });
+const clickSize = (byId, size) => byId('sizeOptions').handlers.click({ target: { closest: () => ({ dataset: { size }, classList: { add() {}, remove() {} }, setAttribute() {} }) } });
 
 test('produto: sem escolher a numeração o link não abre e avisa o cliente', async () => {
   const p = runProductPage({ product: PRODUCT });

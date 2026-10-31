@@ -8,6 +8,7 @@ const { log } = require('../lib/auth');
 const { deleteImage } = require('../lib/upload');
 const { VALID_CATEGORY_SLUGS, CATEGORY_SLUG_TO_TAG } = require('../lib/category-tags');
 const brandAliases = require('../lib/brand-aliases');
+const sizesLib = require('../lib/sizes');
 
 const router = express.Router();
 
@@ -53,6 +54,7 @@ async function validateProductPayload(b, { partial } = {}) {
   }
 
   if (b.sizes !== undefined && b.sizes !== null && !Array.isArray(b.sizes)) errors.push('Tamanhos deve ser uma lista.');
+  if (b.sold_out_sizes !== undefined && b.sold_out_sizes !== null && !Array.isArray(b.sold_out_sizes)) errors.push('Tamanhos esgotados deve ser uma lista.');
   if (b.colors !== undefined && b.colors !== null && !Array.isArray(b.colors)) errors.push('Cores deve ser uma lista.');
   if (b.images !== undefined && b.images !== null && !Array.isArray(b.images)) errors.push('Imagens deve ser uma lista.');
   if (b.tags !== undefined && b.tags !== null && !Array.isArray(b.tags)) errors.push('Tags deve ser uma lista.');
@@ -72,6 +74,8 @@ function rowToProduct(row) {
   return {
     ...row,
     sizes: JSON.parse(row.sizes || '[]'),
+    // Produtos antigos (coluna vazia/ausente) → nenhum tamanho esgotado.
+    sold_out_sizes: sizesLib.parseStoredList(row.sold_out_sizes),
     colors: JSON.parse(row.colors || '[]'),
     images: JSON.parse(row.images || '[]'),
     tags: JSON.parse(row.tags || '[]'),
@@ -258,6 +262,11 @@ router.post(
   asyncHandler(async (req, res) => {
     const b = req.body;
     const errors = await validateProductPayload(b);
+    if (!errors.length) {
+      // O mesmo tamanho não pode estar em "disponíveis" e em "esgotados".
+      const conflict = sizesLib.conflictMessage(b.sizes, b.sold_out_sizes);
+      if (conflict) errors.push(conflict);
+    }
     if (errors.length) return res.status(400).json({ error: errors[0], errors });
 
     // Anti-duplicação: mesmo produto (nome, marca, preço e fotos) criado há poucos segundos = clique repetido.
@@ -271,8 +280,8 @@ router.post(
 
     const slug = await uniqueSlug(b.name);
     const info = await db.run(
-      `INSERT INTO products (name, slug, category_id, brand, sku, description, price, promo_price, sizes, colors, images, tags, category_tags, stock, featured, active, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      `INSERT INTO products (name, slug, category_id, brand, sku, description, price, promo_price, sizes, sold_out_sizes, colors, images, tags, category_tags, stock, featured, active, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         String(b.name).trim(),
         slug,
@@ -282,7 +291,8 @@ router.post(
         b.description || '',
         Number(b.price) || 0,
         b.promo_price != null && b.promo_price !== '' ? Number(b.promo_price) : null,
-        JSON.stringify(b.sizes || []),
+        JSON.stringify(sizesLib.normalizeSizeList(b.sizes)),
+        JSON.stringify(sizesLib.normalizeSizeList(b.sold_out_sizes)),
         JSON.stringify(b.colors || []),
         JSON.stringify(b.images || []),
         JSON.stringify(b.tags || []),
@@ -307,6 +317,13 @@ router.put(
 
     const b = req.body;
     const errors = await validateProductPayload(b, { partial: true });
+    // Valida a combinação final (o que veio + o que já estava salvo): editar só uma das listas também não pode gerar duplicado.
+    const nextSizes = b.sizes != null ? sizesLib.normalizeSizeList(b.sizes) : sizesLib.parseStoredList(existing.sizes);
+    const nextSoldOut = b.sold_out_sizes != null ? sizesLib.normalizeSizeList(b.sold_out_sizes) : sizesLib.parseStoredList(existing.sold_out_sizes);
+    if (!errors.length) {
+      const conflict = sizesLib.conflictMessage(nextSizes, nextSoldOut);
+      if (conflict) errors.push(conflict);
+    }
     if (errors.length) return res.status(400).json({ error: errors[0], errors });
 
     const slug = b.name && b.name !== existing.name ? await uniqueSlug(b.name, id) : existing.slug;
@@ -314,7 +331,7 @@ router.put(
     await db.run(
       `UPDATE products SET
         name = ?, slug = ?, category_id = ?, brand = ?, sku = ?, description = ?, price = ?, promo_price = ?,
-        sizes = ?, colors = ?, images = ?, tags = ?, category_tags = ?, stock = ?, featured = ?, active = ?, updated_at = NOW()
+        sizes = ?, sold_out_sizes = ?, colors = ?, images = ?, tags = ?, category_tags = ?, stock = ?, featured = ?, active = ?, updated_at = NOW()
        WHERE id = ?`,
       [
         b.name != null ? String(b.name).trim() : existing.name,
@@ -327,7 +344,8 @@ router.put(
         b.promo_price !== undefined
           ? (b.promo_price === '' || b.promo_price === null ? null : Number(b.promo_price))
           : existing.promo_price,
-        JSON.stringify(b.sizes ?? JSON.parse(existing.sizes)),
+        JSON.stringify(nextSizes),
+        JSON.stringify(nextSoldOut),
         JSON.stringify(b.colors ?? JSON.parse(existing.colors)),
         JSON.stringify(b.images ?? JSON.parse(existing.images)),
         JSON.stringify(b.tags ?? JSON.parse(existing.tags)),

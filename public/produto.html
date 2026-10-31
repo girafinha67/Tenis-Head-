@@ -47,6 +47,17 @@
 .opt-row{display:flex;flex-wrap:wrap;gap:9px}
 .opt-btn{border:1px solid var(--line);padding:10px 16px;font-size:.85rem;transition:.2s}
 .opt-btn.active{border-color:var(--ink);background:var(--ink);color:#fff}
+/* Tamanho esgotado: continua na grade e selecionável; uma linha vermelha fina cruza o número */
+.opt-btn{position:relative;min-width:48px}
+.opt-btn.soldout{color:var(--mute)}
+.opt-btn.soldout::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to top right,transparent calc(50% - 1px),var(--red) calc(50% - 1px),var(--red) calc(50% + 1px),transparent calc(50% + 1px))}
+.opt-btn.soldout.active{color:#fff}
+.opt-btn.soldout.active::after{background:linear-gradient(to top right,transparent calc(50% - 1px),#ff4a42 calc(50% - 1px),#ff4a42 calc(50% + 1px),transparent calc(50% + 1px))}
+.size-hint{font-size:.78rem;color:var(--mute);margin-top:10px;line-height:1.45}
+.size-hint.is-order{color:var(--ink)}
+.btn-wa span{text-transform:uppercase}
+@media(max-width:480px){.opt-row{gap:8px}.opt-btn{padding:11px 0;min-width:52px;text-align:center}}
 .pdp-qty{display:flex;align-items:center;border:1px solid var(--line);width:fit-content}
 .pdp-qty button{width:38px;height:42px;font-size:1.1rem}
 .pdp-qty span{min-width:34px;text-align:center;font-size:.92rem}
@@ -134,7 +145,8 @@
 
         <div class="pdp-section" id="sizeSection" style="display:none">
           <h4>Tamanho</h4>
-          <div class="opt-row" id="sizeOptions"></div>
+          <div class="opt-row" id="sizeOptions" role="group" aria-label="Tamanhos"></div>
+          <p class="size-hint" id="sizeHint" style="display:none"></p>
         </div>
         <div class="pdp-section" id="colorSection" style="display:none">
           <h4>Cor</h4>
@@ -144,7 +156,7 @@
 
         <div class="pdp-actions">
           <div class="row">
-            <a class="btn btn-wa" id="waBtn" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>CHAMAR NO WHATSAPP</span></a>
+            <a class="btn btn-wa" id="waBtn" href="https://wa.me/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span id="waLabel">Chamar pelo WhatsApp</span></a>
             <button class="fav-inline" id="favBtn" aria-label="Favoritar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2 5 5.4 5c2 0 3.4 1 4.6 2.6C11.2 6 12.6 5 14.6 5 18 5 19.6 8.4 18 11.7 15.5 16.4 12 21 12 21z"/></svg></button>
           </div>
           <p class="wa-hint" id="waHint">Escolha a numeração e fale com a gente. A venda é feita pelo WhatsApp.</p>
@@ -185,6 +197,7 @@
 <script src="js/mock-api.js"></script>
 <script src="js/shop.js"></script>
 <script src="js/whatsapp-link.js"></script>
+<script src="js/tn-sizes.js"></script>
 <script>
 (function(){
   // Foto otimizada pelo cache da Vercel (js/img-opt.js); sem ele usa a original.
@@ -265,14 +278,28 @@
       priceEl.textContent = money(product.price);
     }
 
-    if(product.sizes && product.sizes.length){
+    // Disponíveis + esgotados na mesma grade, em ordem numérica (js/tn-sizes.js). Só o que o admin cadastrou.
+    var sizeOptions = window.TNSizes.buildOptions(product);
+    var HINT_DEFAULT = 'Tamanhos esgotados também podem ser solicitados por encomenda pelo WhatsApp.';
+    if(sizeOptions.length){
       document.getElementById('sizeSection').style.display = '';
       var sizeWrap = document.getElementById('sizeOptions');
-      sizeWrap.innerHTML = product.sizes.map(function(s){ return '<button class="opt-btn" data-size="'+s+'">'+s+'</button>'; }).join('');
+      var sizeHint = document.getElementById('sizeHint');
+      var hasSoldOut = sizeOptions.some(function(o){ return o.soldOut; });
+      sizeWrap.innerHTML = sizeOptions.map(function(o){
+        return '<button type="button" class="opt-btn'+(o.soldOut?' soldout':'')+'" data-size="'+o.size+'"'+(o.soldOut?' data-soldout="1"':'')+
+          ' aria-pressed="false" aria-label="Tamanho '+o.size+(o.soldOut?', esgotado, disponível por encomenda':'')+'">'+o.size+'</button>';
+      }).join('');
+      if(hasSoldOut){ sizeHint.textContent = HINT_DEFAULT; sizeHint.style.display = ''; }
       sizeWrap.addEventListener('click', function(e){
         var b = e.target.closest('button'); if(!b) return;
-        sizeWrap.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); x.classList.remove('need'); });
-        b.classList.add('active'); selected.size = b.dataset.size; refreshWa();
+        var size = b.dataset.size;
+        var already = selected.size === size;
+        sizeWrap.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); x.classList.remove('need'); x.setAttribute('aria-pressed','false'); });
+        // clicar de novo no tamanho escolhido tira a seleção (o botão do WhatsApp volta ao normal)
+        if(already){ selected.size = null; }
+        else { b.classList.add('active'); b.setAttribute('aria-pressed','true'); selected.size = size; }
+        refreshWa();
       });
     }
     if(product.colors && product.colors.length){
@@ -309,23 +336,32 @@
 
     // ---- Chamar no WhatsApp: a venda é feita na conversa, o site não cobra nada ----
     var waBtn = document.getElementById('waBtn');
+    var waLabel = document.getElementById('waLabel');
     var sizeSection = document.getElementById('sizeOptions');
     refreshWa();
+    // O botão sempre reflete o tamanho selecionado: esgotado → "Encomendar pelo WhatsApp"; senão → "Chamar pelo WhatsApp".
     function refreshWa(){
       if(!waBtn) return;
+      var order = !!(selected.size && window.TNSizes.isSoldOut(sizeOptions, selected.size));
+      if(waLabel) waLabel.textContent = order ? 'Encomendar pelo WhatsApp' : 'Chamar pelo WhatsApp';
+      var hintEl = document.getElementById('sizeHint');
+      if(hintEl && sizeOptions.some(function(o){ return o.soldOut; })){
+        hintEl.textContent = order ? 'Tamanho ' + selected.size + ' esgotado: você pode encomendar pelo WhatsApp.' : HINT_DEFAULT;
+        hintEl.classList.toggle('is-order', order);
+      }
       var hasImg = !!(images[imageIndex] || images[0]);
       var url = window.TNWhatsApp.buildUrl({
-        number: storeNumber, name: product.name, size: selected.size,
+        number: storeNumber, name: product.name, size: selected.size, soldOut: order,
         link: hasImg ? window.TNWhatsApp.shareUrl(location.origin, product.slug, imageIndex) : '',
       });
       waBtn.setAttribute('href', url || 'https://wa.me/');
     }
     waBtn.addEventListener('click', function(e){
-      if(product.sizes && product.sizes.length && !selected.size){
+      if(sizeOptions.length && !selected.size){
         e.preventDefault();
         sizeSection.classList.add('need-pick');
         sizeSection.querySelectorAll('button').forEach(function(x){ x.classList.add('need'); });
-        RSShop.toast('Escolha a numeração antes de chamar no WhatsApp');
+        RSShop.toast('Escolha a numeração antes de falar no WhatsApp');
         sizeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }

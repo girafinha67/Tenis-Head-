@@ -30,14 +30,20 @@
     return o + '/p/' + encodeURIComponent(s) + '?i=' + (Number.isInteger(i) && i >= 0 ? i : 0);
   }
 
-  // "O <modelo> da numeração <número> ainda está disponível em estoque?" + endereço do cartão com a foto.
+  // Tamanho disponível: "O <modelo> da numeração <número> ainda está disponível em estoque?"
+  // Tamanho esgotado (opts.soldOut): pedido de encomenda. Nos dois casos vai o endereço do cartão com a foto.
   function buildMessage(opts) {
     var model = clean(opts && opts.name);
     var size = clean(opts && opts.size);
     var link = clean(opts && opts.link);
-    var question = size
-      ? 'O ' + model + ' da numeração ' + size + ' ainda está disponível em estoque?'
-      : 'O ' + model + ' ainda está disponível em estoque?';
+    var question;
+    if (opts && opts.soldOut && size) {
+      question = 'Olá! Tenho interesse no ' + model + ', tamanho ' + size + '. Vi no site que esse tamanho está esgotado e gostaria de saber sobre a possibilidade de fazer uma encomenda.';
+    } else {
+      question = size
+        ? 'O ' + model + ' da numeração ' + size + ' ainda está disponível em estoque?'
+        : 'O ' + model + ' ainda está disponível em estoque?';
+    }
     return link ? question + '\n\n' + link : question;
   }
 

@@ -373,6 +373,9 @@ CREATE TABLE IF NOT EXISTS analytics_events (
   // Coluna separada de category_id/categories (sistema antigo, mantido por
   // compatibilidade mas não usado mais no formulário de produto).
   await exec(`ALTER TABLE products ADD COLUMN IF NOT EXISTS category_tags TEXT NOT NULL DEFAULT '[]';`);
+  // Tamanhos esgotados (aparecem riscados na página do produto; o cliente pode encomendar pelo WhatsApp).
+  // Mesmo SQL em migrations/2026-10-28_tamanhos_esgotados.sql. Produtos antigos ficam com '[]'.
+  await exec(`ALTER TABLE products ADD COLUMN IF NOT EXISTS sold_out_sizes TEXT NOT NULL DEFAULT '[]';`);
   await exec(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS description TEXT;`);
   await exec(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_cart INTEGER NOT NULL DEFAULT 0;`);
 

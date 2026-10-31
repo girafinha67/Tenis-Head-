@@ -44,7 +44,7 @@ test('nenhuma página do site tem ícone/gaveta de carrinho', () => {
 
 test('página do produto tem só o botão de WhatsApp (sem comprar, sem quantidade, sem parcelamento)', () => {
   const h = fs.readFileSync(path.join(ROOT, 'public/produto.html'), 'utf8');
-  assert.match(h, /id="waBtn"[\s\S]*CHAMAR NO WHATSAPP/);
+  assert.match(h, /id="waBtn"[\s\S]*Chamar pelo WhatsApp/);
   assert.ok(!/Quantidade|qtyVal|pInstallment|Pix cai na hora/.test(h));
 });
 

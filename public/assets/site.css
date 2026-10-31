@@ -429,3 +429,7 @@ footer.site-footer .f-top,footer.site-footer .f-bottom{padding-left:clamp(20px,5
 .wa-hint{margin:10px 0 0;font-size:.82rem;color:var(--mute)}
 .opt-btn.need{border-color:var(--red);animation:needPick .5s}
 @keyframes needPick{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+/* ---------- hero: um único vídeo em loop (sem texto/botões) ---------- */
+.hero-video-wrap{cursor:default;background:#0a0a0a;padding-top:0}
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#0a0a0a;pointer-events:none}

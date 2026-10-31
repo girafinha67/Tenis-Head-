@@ -18,7 +18,8 @@
 .vw-mini-title{font-weight:700;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px}\
 .vw-x{flex:none;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;background:none;border:0;cursor:pointer;padding:0}\
 .vw-x svg{width:16px;height:16px}\
-.vw-mini-body{height:132px;display:flex;align-items:center;justify-content:center;background:#000}\
+.vw-mini-body{position:relative;height:132px;background:#000;overflow:hidden}\
+.vw-mini-body video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}\
 .vw-play{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,#0a0a0a 0%,#e10600 100%);\
   box-shadow:0 0 0 0 rgba(225,6,0,.55);animation:vwPulse 2s infinite}\
 .vw-play svg{width:22px;height:22px;margin-left:3px}\
@@ -58,7 +59,7 @@
     var mini = document.createElement('div');
     mini.className = 'vw-mini'; mini.setAttribute('role', 'button'); mini.setAttribute('tabindex', '0'); mini.setAttribute('aria-label', 'Assistir vídeo: ' + TITLE);
     mini.innerHTML = '<div class="vw-mini-head"><span class="vw-mini-title">' + TITLE + '</span><button class="vw-x" aria-label="Fechar vídeo">' + X + '</button></div>' +
-      '<div class="vw-mini-body"><span class="vw-play">' + PLAY + '</span></div>';
+      '<div class="vw-mini-body"><video muted loop autoplay playsinline preload="auto" poster="' + POSTER + '" disablePictureInPicture aria-hidden="true" tabindex="-1" src="' + SRC + '"></video></div>';
     document.body.appendChild(mini);
 
     var scrim = document.createElement('div');
@@ -69,6 +70,13 @@
       '<button class="vw-bigplay" aria-label="Reproduzir">' + PLAY + '</button></div></div>';
     document.body.appendChild(scrim);
 
+    // Mini-card: o próprio vídeo roda mudo e em loop, no tamanho pequeno.
+    var miniVideo = mini.querySelector('video');
+    miniVideo.muted = true;
+    function miniPlay() { var q = miniVideo.play(); if (q && q.catch) q.catch(function () {}); }
+    miniPlay();
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && mini.style.display !== 'none') miniPlay(); });
+
     var video = scrim.querySelector('video'), stage = scrim.querySelector('.vw-stage'), mute = scrim.querySelector('.vw-mute');
     function syncMute() { mute.classList.toggle('muted', video.muted); }
     function syncPaused() { stage.classList.toggle('paused', video.paused); }
@@ -76,6 +84,9 @@
 
     function open() {
       if (!video.getAttribute('src')) video.src = SRC;
+      miniVideo.pause();
+      // sempre recomeça do início ao ampliar
+      try { video.currentTime = 0; } catch (e) {}
       scrim.classList.add('open'); mini.style.display = 'none';
       document.documentElement.style.overflow = 'hidden';
       video.muted = false; syncMute();
@@ -86,6 +97,7 @@
       scrim.classList.remove('open'); video.pause();
       document.documentElement.style.overflow = '';
       mini.style.display = '';
+      miniPlay();
     }
     function dismiss(e) {
       e.stopPropagation();
