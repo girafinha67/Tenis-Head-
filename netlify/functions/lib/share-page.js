@@ -44,14 +44,66 @@ function cardImage(image, origin) {
   }
 }
 
+
+// ---- Escolha da foto do cartão ----
+// O WhatsApp só mostra a foto se ela responder rápido, for imagem de verdade e ficar abaixo de ~300 KB.
+// Testamos as fotos do produto (a escolhida em ?i= primeiro) e usamos a primeira que passa no teste.
+// Se nenhuma passar, devolve '' (cartão só com nome e preço) em vez de apontar para uma foto quebrada.
+const CARD_MAX_BYTES = 300 * 1024;
+const CHECK_TIMEOUT_MS = 4500;
+
+function orderedImages(product, index) {
+  const list = Array.isArray(product && product.images) ? product.images : [];
+  const idx = [];
+  list.forEach((x, n) => { if (typeof x === 'string' && x.trim()) idx.push(n); });
+  const first = idx.indexOf(Number.isInteger(index) ? index : 0);
+  if (first > 0) idx.unshift(idx.splice(first, 1)[0]);
+  return idx;
+}
+
+// 'ok' = serve; 'bad' = foto quebrada de verdade (404, não é imagem); 'unknown' = demorou/oscilou/ficou pesada.
+async function checkImage(url, fetchImpl) {
+  if (!url) return 'bad';
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), CHECK_TIMEOUT_MS);
+  try {
+    const res = await fetchImpl(url, { signal: ctrl.signal, headers: { Accept: 'image/jpeg,image/png,image/*;q=0.8,*/*;q=0.5' } });
+    if (res.status >= 500) return 'unknown';
+    if (!res.ok) return 'bad';
+    const type = String(res.headers.get('content-type') || '').toLowerCase();
+    if (!type.startsWith('image/')) return 'bad';
+    const buf = await res.arrayBuffer();
+    if (!buf.byteLength) return 'bad';
+    return buf.byteLength <= CARD_MAX_BYTES ? 'ok' : 'unknown';
+  } catch {
+    return 'unknown';
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function chooseShareImage(product, index, origin, fetchImpl = globalThis.fetch) {
+  if (typeof fetchImpl !== 'function') return cardImage(pickImage(product, index, origin), origin);
+  const order = orderedImages(product, index).slice(0, 4);
+  let maybe = '';
+  for (const n of order) {
+    const card = cardImage(pickImage(product, n, origin), origin);
+    if (!card) continue;
+    const r = await checkImage(card, fetchImpl);
+    if (r === 'ok') return card;
+    if (r === 'unknown' && !maybe) maybe = card;
+  }
+  return maybe;
+}
+
 function formatPrice(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
 }
 
-function renderSharePage({ product, origin, index, storeName = 'Tênis Head' }) {
+function renderSharePage({ product, origin, index, storeName = 'Tênis Head', image: imageOverride }) {
   const target = `${origin}/produto.html?slug=${encodeURIComponent(product.slug)}`;
-  const image = cardImage(pickImage(product, index, origin), origin);
+  const image = imageOverride !== undefined ? imageOverride : cardImage(pickImage(product, index, origin), origin);
   const i = Number.isInteger(index) && index >= 0 ? index : 0;
   // og:url e canonical apontam para ESTA página: se apontassem para a página do produto (sem tags Open Graph),
   // o WhatsApp leria aquela e o cartão ficaria sem foto.
@@ -72,7 +124,6 @@ function renderSharePage({ product, origin, index, storeName = 'Tênis Head' }) 
 <meta property="og:description" content="${escapeHtml(desc)}">
 <meta property="og:url" content="${escapeHtml(self)}">
 ${image ? `<meta property="og:image" content="${escapeHtml(image)}">
-<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:alt" content="${t}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="${escapeHtml(image)}">` : '<meta name="twitter:card" content="summary">'}
@@ -85,4 +136,4 @@ ${image ? `<meta property="og:image" content="${escapeHtml(image)}">
 </html>`;
 }
 
-module.exports = { renderSharePage, pickImage, cardImage, escapeHtml };
+module.exports = { renderSharePage, pickImage, cardImage, escapeHtml, chooseShareImage, orderedImages };

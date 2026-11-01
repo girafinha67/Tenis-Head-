@@ -2,7 +2,7 @@
 
 const express = require('express');
 const db = require('../lib/db');
-const { renderSharePage } = require('../lib/share-page');
+const { renderSharePage, chooseShareImage } = require('../lib/share-page');
 const { slugify, asyncHandler, parseIntId, escapeLike } = require('../lib/http-utils');
 const { log } = require('../lib/auth');
 const { deleteImage } = require('../lib/upload');
@@ -238,10 +238,13 @@ router.get(
     const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
     if (!/^[A-Za-z0-9.-]+(:\d+)?$/.test(host)) return res.status(400).type('text/plain').send('Host inválido.');
     const settings = await require('../lib/site-settings').getSiteSettings();
-    const html = renderSharePage({
-      product: rowToProduct(row), origin: `${proto}://${host}`,
-      index: Number.parseInt(req.query.i, 10), storeName: settings.store.name,
-    });
+    const origin = `${proto}://${host}`;
+    const product = rowToProduct(row);
+    const index = Number.parseInt(req.query.i, 10);
+    // Testa as fotos (a escolhida primeiro) e usa a primeira que realmente responde e é leve o bastante:
+    // foto quebrada/pesada ou otimizador frio era o que deixava o cartão do WhatsApp sem imagem.
+    const image = await chooseShareImage(product, index, origin);
+    const html = renderSharePage({ product, origin, index, storeName: settings.store.name, image });
     res.set('Cache-Control', 'public, max-age=300');
     res.status(200).type('html').send(html);
   })
@@ -369,7 +372,12 @@ router.delete(
     const existing = await db.get('SELECT * FROM products WHERE id = ?', [id]);
     if (!existing) return res.status(404).json({ error: 'Produto não encontrado.' });
 
-    for (const img of JSON.parse(existing.images || '[]')) await deleteImage(img);
+    // Só apaga do Storage a foto que nenhum OUTRO produto usa (produtos copiados/recriados costumam
+    // compartilhar a mesma URL; apagar mesmo assim deixava o outro produto com a foto quebrada).
+    for (const img of JSON.parse(existing.images || '[]')) {
+      const used = await db.get('SELECT id FROM products WHERE id <> ? AND images LIKE ? LIMIT 1', [id, `%${String(img).replace(/[\\%_]/g, '\\$&')}%`]);
+      if (!used) await deleteImage(img);
+    }
     await db.run('DELETE FROM products WHERE id = ?', [id]);
     await log(req.admin.id, 'product_delete', { id, name: existing.name });
     res.status(200).json({ ok: true });

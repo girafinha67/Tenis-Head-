@@ -75,3 +75,29 @@ test('netlify.toml libera o redimensionador para fotos do Supabase', () => {
   assert.match(toml, /\[images\]\s+remote_images = \[/);
   assert.match(toml, /supabase/);
 });
+
+test('cartão: pula foto quebrada e usa a próxima que carrega', async () => {
+  const { chooseShareImage } = require('../netlify/functions/lib/share-page');
+  const calls = [];
+  const fake = async (url) => {
+    calls.push(url);
+    const ok = url.includes('b.jpg');
+    return { ok, status: ok ? 200 : 404, headers: { get: () => (ok ? 'image/jpeg' : 'text/html') }, arrayBuffer: async () => new ArrayBuffer(ok ? 50000 : 10) };
+  };
+  const img = await chooseShareImage(P, 0, ORIGIN, fake);
+  assert.ok(img.includes('b.jpg'));
+  assert.equal(calls.length, 2);
+});
+
+test('cartão: se todas as fotos estão quebradas, não aponta para imagem inexistente', async () => {
+  const { chooseShareImage } = require('../netlify/functions/lib/share-page');
+  const fake = async () => ({ ok: false, status: 404, headers: { get: () => '' }, arrayBuffer: async () => new ArrayBuffer(0) });
+  assert.equal(await chooseShareImage(P, 0, ORIGIN, fake), '');
+  assert.ok(!renderSharePage({ product: P, origin: ORIGIN, index: 0, image: '' }).includes('og:image'));
+});
+
+test('cartão: erro de rede/timeout mantém a foto (não derruba o cartão por oscilação)', async () => {
+  const { chooseShareImage } = require('../netlify/functions/lib/share-page');
+  const fake = async () => { throw new Error('timeout'); };
+  assert.ok((await chooseShareImage(P, 1, ORIGIN, fake)).includes('b.jpg'));
+});

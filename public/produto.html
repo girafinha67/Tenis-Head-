@@ -32,6 +32,7 @@
 .gallery-thumbs::-webkit-scrollbar{display:none}
 .gallery-thumbs button{width:70px;height:70px;background:var(--surface);border:1.5px solid transparent;overflow:hidden;flex-shrink:0;padding:0}
 .gallery-thumbs button.active{border-color:var(--ink)}
+.gallery-thumbs button[hidden]{display:none}
 .gallery-thumbs img{width:100%;height:100%;object-fit:cover}
 .pdp-brand{font-size:.78rem;letter-spacing:.06em;color:var(--mute);text-transform:uppercase}
 .pdp-name{font-size:clamp(1.6rem,4vw,2.2rem);margin-top:6px}
@@ -248,6 +249,20 @@
       });
     }
     function go(step){ setMain((imageIndex + step + images.length) % images.length); }
+    // Foto que não carrega (arquivo apagado): some da lista de miniaturas e a galeria pula para uma foto que funciona.
+    var deadImgs = {};
+    mainEl.addEventListener('thimgdead', function(){
+      deadImgs[imageIndex] = true;
+      var th = thumbsEl.querySelector('button[data-i="'+imageIndex+'"]'); if(th) th.hidden = true;
+      for(var k = 1; k < images.length; k++){
+        var n = (imageIndex + k) % images.length;
+        if(images[n] && !deadImgs[n]){ setMain(n); return; }
+      }
+    });
+    thumbsEl.addEventListener('thimgdead', function(e){
+      var b = e.target.closest('button'); if(!b) return;
+      deadImgs[Number(b.dataset.i)] = true; b.hidden = true;
+    });
     thumbsEl.innerHTML = images.length > 1 ? images.map(function(img,i){
       return '<button data-i="'+i+'" aria-label="Foto '+(i+1)+'">'+(img?'<img src="'+imgOpt(img,256)+'" alt="">':'')+'</button>';
     }).join('') : '';
