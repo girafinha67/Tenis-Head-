@@ -264,7 +264,7 @@ test('página: tamanho esgotado é selecionável, troca o botão e a mensagem le
   assert.match(p.byId('sizeHint').textContent, /Tamanho 35 esgotado/);
   const href = p.href();
   assert.match(href, /^https:\/\/wa\.me\/5598999999999\?text=/);
-  assert.equal(decode(href), 'Olá! Tenho interesse no Air Force 1, tamanho 35. Vi no site que esse tamanho está esgotado e gostaria de saber sobre a possibilidade de fazer uma encomenda.\n\nhttps://loja.app/p/teste?i=0');
+  assert.equal(decode(href), 'Olá! Tenho interesse no Air Force 1, tamanho 35. Vi no site que esse tamanho está esgotado e gostaria de saber sobre a possibilidade de fazer uma encomenda.\n\nhttps://loja.app/p/teste?i=0&v=2');
   let prevented = false;
   p.byId('waBtn').handlers.click({ preventDefault: () => { prevented = true; } });
   assert.equal(prevented, false, 'esgotado não é bloqueado: abre o WhatsApp da loja');

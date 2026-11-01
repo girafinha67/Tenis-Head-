@@ -27,7 +27,7 @@
     var o = clean(origin).replace(/\/+$/, '');
     if (!s || !/^https?:\/\//i.test(o)) return '';
     var i = Number(index);
-    return o + '/p/' + encodeURIComponent(s) + '?i=' + (Number.isInteger(i) && i >= 0 ? i : 0);
+    return o + '/p/' + encodeURIComponent(s) + '?i=' + (Number.isInteger(i) && i >= 0 ? i : 0) + '&v=2';
   }
 
   // Tamanho disponível: "O <modelo> da numeração <número> ainda está disponível em estoque?"

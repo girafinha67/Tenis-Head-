@@ -84,7 +84,7 @@ test('cartão: pula foto quebrada e usa a próxima que carrega', async () => {
     const ok = url.includes('b.jpg');
     return { ok, status: ok ? 200 : 404, headers: { get: () => (ok ? 'image/jpeg' : 'text/html') }, arrayBuffer: async () => new ArrayBuffer(ok ? 50000 : 10) };
   };
-  const img = await chooseShareImage(P, 0, ORIGIN, fake);
+  const img = await chooseShareImage(P, 0, ORIGIN, fake, { useEndpoint: false });
   assert.ok(img.includes('b.jpg'));
   assert.equal(calls.length, 2);
 });
@@ -92,12 +92,34 @@ test('cartão: pula foto quebrada e usa a próxima que carrega', async () => {
 test('cartão: se todas as fotos estão quebradas, não aponta para imagem inexistente', async () => {
   const { chooseShareImage } = require('../netlify/functions/lib/share-page');
   const fake = async () => ({ ok: false, status: 404, headers: { get: () => '' }, arrayBuffer: async () => new ArrayBuffer(0) });
-  assert.equal(await chooseShareImage(P, 0, ORIGIN, fake), '');
+  assert.equal(await chooseShareImage(P, 0, ORIGIN, fake, { useEndpoint: false }), '');
   assert.ok(!renderSharePage({ product: P, origin: ORIGIN, index: 0, image: '' }).includes('og:image'));
 });
 
 test('cartão: erro de rede/timeout mantém a foto (não derruba o cartão por oscilação)', async () => {
   const { chooseShareImage } = require('../netlify/functions/lib/share-page');
   const fake = async () => { throw new Error('timeout'); };
-  assert.ok((await chooseShareImage(P, 1, ORIGIN, fake)).includes('b.jpg'));
+  assert.ok((await chooseShareImage(P, 1, ORIGIN, fake, { useEndpoint: false })).includes('b.jpg'));
+});
+
+test('cartão: usa o endereço /api/share-img (JPEG leve) quando ele responde', async () => {
+  const { chooseShareImage } = require('../netlify/functions/lib/share-page');
+  const fake = async () => ({ ok: true, status: 200, headers: { get: () => 'image/jpeg' }, arrayBuffer: async () => new ArrayBuffer(90000) });
+  assert.equal(await chooseShareImage(P, 1, ORIGIN, fake), 'https://loja.app/api/share-img/air-force-1?i=1');
+});
+
+test('cartão: converte WebP/PNG grande em JPEG leve (o que o WhatsApp aceita)', async () => {
+  const { toShareJpeg, SHARE_JPEG_MAX, isAllowedImageHost } = require('../netlify/functions/lib/share-page');
+  let sharp;
+  try { sharp = require('sharp'); } catch { return; } // sem sharp instalado no ambiente de teste
+  const w = 1600, h = 1600, raw = Buffer.alloc(w * h * 3);
+  for (let i = 0; i < raw.length; i++) raw[i] = (i * 7 + (i >> 5)) & 255; // ruído: difícil de comprimir
+  const webp = await sharp(raw, { raw: { width: w, height: h, channels: 3 } }).webp({ quality: 95 }).toBuffer();
+  assert.ok(webp.length > 300 * 1024);
+  const jpg = await toShareJpeg(webp);
+  assert.ok(jpg.length <= SHARE_JPEG_MAX);
+  assert.deepEqual([...jpg.subarray(0, 3)], [0xff, 0xd8, 0xff]);
+  assert.ok(isAllowedImageHost('https://x.supabase.co/a.webp', ORIGIN));
+  assert.ok(!isAllowedImageHost('https://evil.example/a.webp', ORIGIN));
+  assert.ok(!isAllowedImageHost('http://x.supabase.co/a.webp', ORIGIN));
 });

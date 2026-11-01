@@ -2,7 +2,7 @@
 
 const express = require('express');
 const db = require('../lib/db');
-const { renderSharePage, chooseShareImage } = require('../lib/share-page');
+const { renderSharePage, chooseShareImage, pickImage, cardImage, isAllowedImageHost, downloadImage, toShareJpeg } = require('../lib/share-page');
 const { slugify, asyncHandler, parseIntId, escapeLike } = require('../lib/http-utils');
 const { log } = require('../lib/auth');
 const { deleteImage } = require('../lib/upload');
@@ -247,6 +247,29 @@ router.get(
     const html = renderSharePage({ product, origin, index, storeName: settings.store.name, image });
     res.set('Cache-Control', 'public, max-age=300');
     res.status(200).type('html').send(html);
+  })
+);
+
+
+// GET /api/share-img/:slug?i=<foto> (público) — foto do cartão do WhatsApp: sempre JPEG leve (ver lib/share-page.js).
+router.get(
+  '/share-img/:slug',
+  asyncHandler(async (req, res) => {
+    const row = await db.get('SELECT * FROM products WHERE slug = ? AND active = 1', [req.params.slug]);
+    if (!row) return res.status(404).type('text/plain').send('Produto não encontrado.');
+    const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim() === 'http' ? 'http' : 'https';
+    const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+    if (!/^[A-Za-z0-9.-]+(:\d+)?$/.test(host)) return res.status(400).type('text/plain').send('Host inválido.');
+    const origin = `${proto}://${host}`;
+    const product = rowToProduct(row);
+    const raw = pickImage(product, Number.parseInt(req.query.i, 10), origin);
+    if (!raw || !isAllowedImageHost(raw, origin)) return res.status(404).type('text/plain').send('Sem foto.');
+    const input = await downloadImage(raw);
+    const jpeg = input && (await toShareJpeg(input));
+    if (!jpeg) return res.status(404).type('text/plain').send('Foto indisponível.');
+    // Foto não muda para a mesma URL (nome com data/aleatório), então pode ficar em cache por bastante tempo.
+    res.set('Cache-Control', 'public, max-age=86400, s-maxage=2592000');
+    res.status(200).type('image/jpeg').send(jpeg);
   })
 );
 

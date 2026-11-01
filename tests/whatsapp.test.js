@@ -20,7 +20,7 @@ test('mensagem: "O <modelo> da numeração <número> ainda está disponível em 
 
 test('a foto vai como cartão: endereço curto do produto em linha própria, não o arquivo da imagem', () => {
   const link = W.shareUrl('https://loja.app', 'adidas-samba', 1);
-  assert.equal(link, 'https://loja.app/p/adidas-samba?i=1');
+  assert.equal(link, 'https://loja.app/p/adidas-samba?i=1&v=2');
   const msg = W.buildMessage({ name: 'Adidas Samba', size: '40', link });
   assert.equal(msg.split('\n')[0], 'O Adidas Samba da numeração 40 ainda está disponível em estoque?');
   assert.equal(msg.split('\n').pop(), link);
@@ -45,7 +45,7 @@ test('shareUrl: exige slug e origem válidos; índice inválido vira 0', () => {
   assert.equal(W.shareUrl('', 'x', 0), '');
   assert.equal(W.shareUrl('https://loja.app', '', 0), '');
   assert.equal(W.shareUrl('javascript:x', 'x', 0), '');
-  assert.equal(W.shareUrl('https://loja.app/', 'tênis x', -3), 'https://loja.app/p/t%C3%AAnis%20x?i=0');
+  assert.equal(W.shareUrl('https://loja.app/', 'tênis x', -3), 'https://loja.app/p/t%C3%AAnis%20x?i=0&v=2');
 });
 
 test('nome com quebra de linha/controle não bagunça a mensagem', () => {
@@ -109,7 +109,7 @@ test('produto: com a numeração escolhida o link leva modelo, número e o cart�
   assert.equal(prevented, false);
   const href = p.byId('waBtn').attrs.href;
   assert.match(href, /^https:\/\/wa\.me\/5598999999999\?text=/);
-  assert.equal(decode(href), 'O Nike Air Force Verde da numeração 40 ainda está disponível em estoque?\n\nhttps://loja.app/p/teste?i=0');
+  assert.equal(decode(href), 'O Nike Air Force Verde da numeração 40 ainda está disponível em estoque?\n\nhttps://loja.app/p/teste?i=0&v=2');
 });
 
 test('produto: a foto da mensagem acompanha a foto escolhida na galeria', async () => {
@@ -117,7 +117,7 @@ test('produto: a foto da mensagem acompanha a foto escolhida na galeria', async 
   await p.settle();
   clickSize(p.byId, '39');
   p.byId('galleryThumbs').handlers.click({ target: { closest: () => ({ dataset: { i: '1' } }) } });
-  assert.ok(decode(p.byId('waBtn').attrs.href).endsWith('https://loja.app/p/teste?i=1'));
+  assert.ok(decode(p.byId('waBtn').attrs.href).endsWith('https://loja.app/p/teste?i=1&v=2'));
 });
 
 test('produto sem foto: manda só a pergunta, sem link', async () => {

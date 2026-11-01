@@ -45,6 +45,68 @@ function cardImage(image, origin) {
 }
 
 
+
+// ---- Foto do cartão sempre em JPEG leve ----
+// O WhatsApp não mostra bem og:image em WebP (e o painel salva as fotos em WebP) nem fotos acima de ~300 KB.
+// Por isso o cartão usa /api/share-img/<slug>?i=N, que baixa a foto do produto e entrega um JPEG pequeno.
+const SHARE_JPEG_MAX = 240 * 1024;
+const FETCH_MAX_BYTES = 12 * 1024 * 1024;
+
+function shareImageUrl(origin, slug, index) {
+  const i = Number.isInteger(index) && index >= 0 ? index : 0;
+  return `${origin}/api/share-img/${encodeURIComponent(slug)}?i=${i}`;
+}
+
+// Só baixa foto do Supabase Storage ou do próprio site (nunca endereço arbitrário).
+function isAllowedImageHost(absUrl, origin) {
+  try {
+    const u = new URL(absUrl);
+    const o = new URL(origin);
+    return /^https:$/.test(u.protocol) && (/\.supabase\.co$/i.test(u.hostname) || u.hostname === o.hostname);
+  } catch {
+    return false;
+  }
+}
+
+async function downloadImage(url, fetchImpl = globalThis.fetch) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 9000);
+  try {
+    const res = await fetchImpl(url, { signal: ctrl.signal });
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    return buf.length && buf.length <= FETCH_MAX_BYTES ? buf : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Qualquer formato (webp/png/jpg/avif/gif) -> JPEG com fundo branco, até ~240 KB. Devolve null se não der.
+async function toShareJpeg(input, sharpImpl) {
+  let sharp = sharpImpl;
+  if (!sharp) {
+    try { sharp = require('sharp'); } catch { return null; }
+  }
+  try {
+    const steps = [[640, 74], [600, 66], [520, 58], [440, 50]];
+    let out = null;
+    for (const [w, q] of steps) {
+      out = await sharp(input, { failOn: 'none' })
+        .rotate()
+        .resize({ width: w, height: w, fit: 'inside', withoutEnlargement: true })
+        .flatten({ background: '#ffffff' })
+        .jpeg({ quality: q, mozjpeg: true })
+        .toBuffer();
+      if (out.length <= SHARE_JPEG_MAX) break;
+    }
+    return out && out.length ? out : null;
+  } catch {
+    return null;
+  }
+}
+
 // ---- Escolha da foto do cartão ----
 // O WhatsApp só mostra a foto se ela responder rápido, for imagem de verdade e ficar abaixo de ~300 KB.
 // Testamos as fotos do produto (a escolhida em ?i= primeiro) e usamos a primeira que passa no teste.
@@ -82,16 +144,23 @@ async function checkImage(url, fetchImpl) {
   }
 }
 
-async function chooseShareImage(product, index, origin, fetchImpl = globalThis.fetch) {
+async function chooseShareImage(product, index, origin, fetchImpl = globalThis.fetch, opts = {}) {
   if (typeof fetchImpl !== 'function') return cardImage(pickImage(product, index, origin), origin);
+  const useEndpoint = opts.useEndpoint !== false && product && product.slug;
   const order = orderedImages(product, index).slice(0, 4);
   let maybe = '';
   for (const n of order) {
-    const card = cardImage(pickImage(product, n, origin), origin);
-    if (!card) continue;
-    const r = await checkImage(card, fetchImpl);
-    if (r === 'ok') return card;
-    if (r === 'unknown' && !maybe) maybe = card;
+    const raw = pickImage(product, n, origin);
+    if (!raw) continue;
+    const candidates = [];
+    if (useEndpoint) candidates.push(shareImageUrl(origin, product.slug, n));
+    candidates.push(cardImage(raw, origin));
+    for (const card of candidates) {
+      if (!card) continue;
+      const r = await checkImage(card, fetchImpl);
+      if (r === 'ok') return card;
+      if (r === 'unknown' && !maybe) maybe = card;
+    }
   }
   return maybe;
 }
@@ -136,4 +205,4 @@ ${image ? `<meta property="og:image" content="${escapeHtml(image)}">
 </html>`;
 }
 
-module.exports = { renderSharePage, pickImage, cardImage, escapeHtml, chooseShareImage, orderedImages };
+module.exports = { renderSharePage, pickImage, cardImage, escapeHtml, chooseShareImage, orderedImages, shareImageUrl, isAllowedImageHost, downloadImage, toShareJpeg, SHARE_JPEG_MAX };
