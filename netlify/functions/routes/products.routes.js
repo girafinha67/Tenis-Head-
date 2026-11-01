@@ -243,7 +243,8 @@ router.get(
     const index = Number.parseInt(req.query.i, 10);
     // Testa as fotos (a escolhida primeiro) e usa a primeira que realmente responde e é leve o bastante:
     // foto quebrada/pesada ou otimizador frio era o que deixava o cartão do WhatsApp sem imagem.
-    const image = await chooseShareImage(product, index, origin);
+    // Sem nenhuma foto utilizável, o cartão leva a logo da loja (melhor que cartão vazio).
+    const image = (await chooseShareImage(product, index, origin)) || `${origin}/api/share-img/${encodeURIComponent(product.slug)}?i=logo`;
     const html = renderSharePage({ product, origin, index, storeName: settings.store.name, image });
     res.set('Cache-Control', 'public, max-age=300');
     res.status(200).type('html').send(html);
@@ -262,7 +263,7 @@ router.get(
     if (!/^[A-Za-z0-9.-]+(:\d+)?$/.test(host)) return res.status(400).type('text/plain').send('Host inválido.');
     const origin = `${proto}://${host}`;
     const product = rowToProduct(row);
-    const raw = pickImage(product, Number.parseInt(req.query.i, 10), origin);
+    const raw = req.query.i === 'logo' ? `${origin}/assets/logo.png` : pickImage(product, Number.parseInt(req.query.i, 10), origin);
     if (!raw || !isAllowedImageHost(raw, origin)) return res.status(404).type('text/plain').send('Sem foto.');
     const input = await downloadImage(raw);
     const jpeg = input && (await toShareJpeg(input));

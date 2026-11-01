@@ -32,6 +32,24 @@
     return Array.from(document.querySelectorAll('#categoryTags input:checked')).map((el) => el.value);
   }
 
+  // Foto que não abre (arquivo apagado do armazenamento): marca em vermelho para reenviar.
+  (function () {
+    const st = document.createElement('style');
+    st.textContent = '.th-broken-tag{display:inline-block;margin-left:6px;padding:2px 7px;background:#e10600;color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.04em;border-radius:3px;vertical-align:middle}' +
+      '.image-preview.broken{outline:2px solid #e10600}.image-preview.broken::after{content:"FOTO QUEBRADA — remova e envie de novo";position:absolute;left:0;right:0;bottom:0;background:#e10600;color:#fff;font-size:.6rem;font-weight:700;text-align:center;padding:2px}';
+    document.head.appendChild(st);
+    document.addEventListener('thimgdead', (e) => {
+      const t = e.target;
+      const row = t.closest && t.closest('.prod-row');
+      if (row) {
+        const cell = row.querySelector('.cell-name');
+        if (cell && !cell.querySelector('.th-broken-tag')) cell.insertAdjacentHTML('beforeend', '<span class="th-broken-tag">FOTO QUEBRADA</span>');
+      }
+      const prev = t.closest && t.closest('.image-preview');
+      if (prev) { prev.classList.add('broken'); prev.style.position = prev.style.position || 'relative'; }
+    });
+  })();
+
   function renderImagePreview() {
     const row = document.getElementById('imagePreviewRow');
     row.innerHTML = currentImages.map((url, i) => `
